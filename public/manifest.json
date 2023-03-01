@@ -10,13 +10,13 @@
   },
 
   "action": {
-    "default_icon": "icon.png",
+    "default_icon": "codecov-circle.png",
     "default_popup": "popup.html"
   },
 
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
+      "matches": ["*://github.com/*"],
       "js": ["js/vendor.js", "js/content_script.js"]
     }
   ],
