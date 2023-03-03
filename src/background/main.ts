@@ -1,6 +1,6 @@
 import browser from "webextension-polyfill";
-import { MessageType } from "../utils/types";
-import { print } from "../utils/utils";
+import { MessageType } from "../types";
+import { print } from "../utils";
 
 async function main(): Promise<void> {
   browser.runtime.onMessage.addListener(handleMessages);

@@ -3,7 +3,7 @@ import domLoaded from "dom-loaded";
 import * as pageDetect from "github-url-detection";
 import { css } from "code-tag";
 
-import { CoverageReport, CoverageStatus, MessageType } from "../utils/types";
+import { CoverageReport, CoverageStatus, MessageType } from "../../types";
 import {
   animationAttachmentId,
   animationDefinitionId,
@@ -11,8 +11,8 @@ import {
   seenClassName,
   lineSelector,
   colors,
-} from "../utils/constants";
-import { print } from "../utils/utils";
+} from "./constants";
+import { print } from "../../utils";
 
 const globals: {
   coverageReport?: CoverageReport;
