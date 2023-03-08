@@ -1,4 +1,3 @@
-const webpack = require("webpack");
 const path = require("path");
 const CopyPlugin = require("copy-webpack-plugin");
 const { ProvidePlugin } = require("webpack");
@@ -6,10 +5,10 @@ const srcDir = path.join(__dirname, "..", "src");
 
 module.exports = {
   entry: {
-    popup: path.join(srcDir, "popup.tsx"),
-    options: path.join(srcDir, "options.tsx"),
-    background: path.join(srcDir, "background.ts"),
-    content_script: path.join(srcDir, "content_script.tsx"),
+    background: path.join(srcDir, "background", "main.ts"),
+    github: path.join(srcDir, "content", "github", "main.ts"),
+    popup: path.join(srcDir, "popup", "main.tsx"),
+    options: path.join(srcDir, "options", "main.tsx"),
   },
   output: {
     path: path.join(__dirname, "../dist/js"),
