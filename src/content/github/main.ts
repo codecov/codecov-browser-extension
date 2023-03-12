@@ -22,7 +22,7 @@ async function main(): Promise<void> {
   await execute();
   // this event discovered by "reverse-engineering GitHub"
   // https://github.com/refined-github/refined-github/blob/main/contributing.md#reverse-engineering-github
-  // TODO: this event is not fired when navigating from file view to e.g. issues tab and back
+  // TODO: this event is not fired when navigating using the browser's back and forward buttons
   document.addEventListener("soft-nav:end", () => {
     clear();
     execute();
@@ -39,7 +39,13 @@ async function execute(): Promise<void> {
 
   print("content script executing");
 
-  createButton();
+  try {
+    createButton();
+  } catch (e: any) {
+    print(e);
+    return;
+  }
+
   const urlMetadata = getMetadataFromURL();
   const coverageReport = await getCoverageReport(urlMetadata);
   if (!coverageReport.files) {
