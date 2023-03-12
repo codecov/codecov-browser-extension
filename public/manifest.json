@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
 
-  "name": "Codecov for GitHub",
-  "description": "Codecov for GitHub",
+  "name": "Codecov",
+  "description": "Codecov Browser Extension",
   "version": "0.1.0",
 
   "options_ui": {
