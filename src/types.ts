@@ -4,10 +4,23 @@ export enum CoverageStatus {
   PARTIAL,
 }
 
-export type CoverageReport = {
+export type FileCoverageReport = {
   [lineNumber: number]: CoverageStatus;
 };
 
+export type PullCoverageReport = {
+  [fileName: string]: {
+    lines: {
+      [lineNumber: string]: {
+        coverage: {
+          head: number;
+        };
+      };
+    };
+  };
+};
+
 export enum MessageType {
-  FETCH_REPORT = "fetch_report",
+  FETCH_COMMIT_REPORT = "fetch_commit_report",
+  FETCH_PR_COMPARISON = "fetch_pr_comparison",
 }

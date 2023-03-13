@@ -13,7 +13,7 @@ export class Codecov {
     return response.ok;
   }
 
-  static async fetchReport(payload: any): Promise<any> {
+  static async fetchCommitReport(payload: any): Promise<any> {
     const { service, owner, repo, sha, branch, path } = payload;
 
     const url = new URL(
@@ -26,6 +26,24 @@ export class Codecov {
       Object.assign(params, _.omitBy({ branch, sha }, _.isNil))
     ).toString();
 
+    const response = await fetch(url.toString());
+    const data = await response.json();
+
+    return {
+      ok: response.ok,
+      data,
+    };
+  }
+
+  static async fetchPRComparison(payload: any): Promise<any> {
+    const { service, owner, repo, pullid } = payload;
+
+    const url = new URL(
+      `${this.baseUrl}/${service}/${owner}/repos/${repo}/compare`
+    );
+
+    const params = { pullid };
+    url.search = new URLSearchParams(params).toString();
     const response = await fetch(url.toString());
     const data = await response.json();
 

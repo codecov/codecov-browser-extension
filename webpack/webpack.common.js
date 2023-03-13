@@ -6,7 +6,8 @@ const srcDir = path.join(__dirname, "..", "src");
 module.exports = {
   entry: {
     background: path.join(srcDir, "background", "main.ts"),
-    github: path.join(srcDir, "content", "github", "main.ts"),
+    githubFile: path.join(srcDir, "content", "github", "file", "main.ts"),
+    githubPR: path.join(srcDir, "content", "github", "pr", "main.tsx"),
     popup: path.join(srcDir, "popup", "main.tsx"),
     options: path.join(srcDir, "options", "main.tsx"),
   },
@@ -31,7 +32,7 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        use: ['style-loader', 'css-loader', 'postcss-loader'],
+        use: ["style-loader", "css-loader", "postcss-loader"],
         exclude: /node_modules/,
       },
     ],

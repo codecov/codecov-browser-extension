@@ -1,21 +1,22 @@
 import browser from "webextension-polyfill";
-import domLoaded from "dom-loaded";
-import * as pageDetect from "github-url-detection";
-import { css } from "code-tag";
+import alpha from "color-alpha";
 
-import { CoverageReport, CoverageStatus, MessageType } from "../../types";
 import {
-  animationAttachmentId,
-  animationDefinitionId,
-  animationName,
-  seenClassName,
-  lineSelector,
-  colors,
-} from "./constants";
-import { print } from "../../utils";
+  FileCoverageReport,
+  CoverageStatus,
+  MessageType,
+} from "../../../types";
+import { lineSelector } from "./constants";
+import { print } from "../../../utils";
+import {
+  animateAndAnnotateLines,
+  clearAnimation,
+  clearAnnotations,
+} from "../common/animation";
+import { colors, seenClassName } from "../common/constants";
 
 const globals: {
-  coverageReport?: CoverageReport;
+  coverageReport?: FileCoverageReport;
 } = {};
 
 async function main(): Promise<void> {
@@ -30,23 +31,16 @@ async function main(): Promise<void> {
 }
 
 async function execute(): Promise<void> {
-  await domLoaded;
-
-  if (!pageDetect.hasCode) {
-    print("no code on page");
+  const urlMetadata = getMetadataFromURL();
+  if (!urlMetadata) {
+    print("url does not match file view");
     return;
   }
 
   print("content script executing");
 
-  try {
-    createButton();
-  } catch (e: any) {
-    print(e);
-    return;
-  }
+  createButton();
 
-  const urlMetadata = getMetadataFromURL();
   const coverageReport = await getCoverageReport(urlMetadata);
   if (!coverageReport.files) {
     print("file not found in report");
@@ -57,7 +51,7 @@ async function execute(): Promise<void> {
   updateButton(`Coverage: ${fileReport.totals.coverage}%`);
 
   globals.coverageReport = Object.fromEntries(fileReport.line_coverage);
-  animateAndAnnotateLines();
+  animateAndAnnotateLines(lineSelector, annotateLine);
 }
 
 main().catch(console.warn.bind(print));
@@ -79,7 +73,7 @@ function createButton() {
     event.preventDefault();
     const isInactive = codecovButton.getAttribute("data-inactive");
     if (isInactive == "true") {
-      animateAndAnnotateLines();
+      animateAndAnnotateLines(lineSelector, annotateLine);
       codecovButton.removeAttribute("data-inactive");
       codecovButton.style.opacity = "1";
     } else {
@@ -93,13 +87,13 @@ function createButton() {
   rawButton.parentNode?.prepend(codecovButton);
 }
 
-function getMetadataFromURL(): { [key: string]: string } {
+function getMetadataFromURL(): { [key: string]: string } | null {
   const regexp =
     /github.com\/(?<owner>.+?)\/(?<repo>.+?)\/blob\/(?<ref>.+?)\/(?<path>.+)/;
   const matches = regexp.exec(document.URL);
   const groups = matches?.groups;
   if (!groups) {
-    return {};
+    return null;
   }
   return groups;
 }
@@ -114,7 +108,7 @@ async function getCoverageReport(url: { [key: string]: string }) {
 
   // TODO: check if codecov can figure out whether branch or sha
   const shaResponse = await browser.runtime.sendMessage({
-    type: MessageType.FETCH_REPORT,
+    type: MessageType.FETCH_COMMIT_REPORT,
     payload: {
       ...commonPayload,
       sha: url.ref,
@@ -126,7 +120,7 @@ async function getCoverageReport(url: { [key: string]: string }) {
   }
 
   const branchResponse = await browser.runtime.sendMessage({
-    type: MessageType.FETCH_REPORT,
+    type: MessageType.FETCH_COMMIT_REPORT,
     payload: {
       ...commonPayload,
       branch: url.ref,
@@ -148,63 +142,18 @@ function annotateLine(line: HTMLElement) {
   const status = globals.coverageReport![lineNumber];
   print(`annotating line ${lineNumber} as ${CoverageStatus[status]}`);
   if (status === CoverageStatus.COVERED) {
-    line.style.backgroundColor = colors.green;
+    line.style.backgroundColor = alpha(colors.green, 0.25);
   } else if (status === CoverageStatus.UNCOVERED) {
-    line.style.backgroundColor = colors.red;
+    line.style.backgroundColor = alpha(colors.red, 0.25);
   } else if (status === CoverageStatus.PARTIAL) {
-    line.style.backgroundColor = colors.yellow;
+    line.style.backgroundColor = alpha(colors.yellow, 0.25);
   } else {
     line.style.backgroundColor = "inherit";
   }
 }
 
-function getListener(
-  seenMark: string,
-  selector: string,
-  callback: (element: HTMLElement) => void
-) {
-  return function (event: AnimationEvent) {
-    const target = event.target as HTMLElement;
-    // The target can match a selector even if the animation actually happened on a ::before pseudo-element, so it needs an explicit exclusion here
-    if (target.classList.contains(seenMark) || !target.matches(selector)) {
-      return;
-    }
-
-    // Removes this specific element’s animation once it was seen
-    target.classList.add(seenMark);
-
-    callback(target);
-  };
-}
-
-function registerAnimation(animationName: string) {
-  const rule = document.createElement("style");
-  rule.id = animationDefinitionId;
-  rule.textContent = css`
-    @keyframes ${animationName} {
-    }
-  `;
-  document.head.append(rule);
-}
-
-// This approach taken from refined-github
-// https://github.com/refined-github/refined-github/blob/23.2.20/source/helpers/selector-observer.tsx
-function animateAndAnnotateLines() {
-  registerAnimation(animationName);
-
-  const rule = document.createElement("style");
-  rule.id = animationAttachmentId;
-  rule.textContent = css`
-    :where(${String(lineSelector)}):not(.${seenClassName}) {
-      animation: 1ms ${animationName};
-    }
-  `;
-  document.body.prepend(rule);
-
-  window.addEventListener(
-    "animationstart",
-    getListener(seenClassName, lineSelector, annotateLine)
-  );
+function clearLineAnnotation(line: HTMLElement) {
+  line.style.backgroundColor = "inherit";
 }
 
 function clearButton() {
@@ -214,31 +163,9 @@ function clearButton() {
   codecovButton?.remove();
 }
 
-function clearAnimation() {
-  document.getElementById(animationDefinitionId)?.remove();
-  document.getElementById(animationAttachmentId)?.remove();
-  window.removeEventListener(
-    "animationstart",
-    getListener(seenClassName, lineSelector, annotateLine)
-  );
-}
-
-function clearAnnotations() {
-  Array.from(document.getElementsByClassName(seenClassName)).map((line) => {
-    print(
-      `[x] removing annotation for line ${
-        parseInt(line.getAttribute("data-key")!) + 1
-      }`
-    );
-    // @ts-ignore
-    line.style.backgroundColor = "inherit";
-    line.classList.remove(seenClassName);
-  });
-}
-
 function clearAnimationAndAnnotations() {
-  clearAnimation();
-  clearAnnotations();
+  clearAnimation(lineSelector, annotateLine);
+  clearAnnotations(clearLineAnnotation);
 }
 
 function clear() {

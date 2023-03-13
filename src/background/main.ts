@@ -11,8 +11,11 @@ async function handleMessages(message: { type: MessageType; payload: any }) {
   print(
     `executing ${message.type} with payload: ${JSON.stringify(message.payload)}`
   );
-  if (message.type === MessageType.FETCH_REPORT) {
-    return Codecov.fetchReport(message.payload);
+  switch (message.type) {
+    case MessageType.FETCH_COMMIT_REPORT:
+      return Codecov.fetchCommitReport(message.payload);
+    case MessageType.FETCH_PR_COMPARISON:
+      return Codecov.fetchPRComparison(message.payload);
   }
 }
 

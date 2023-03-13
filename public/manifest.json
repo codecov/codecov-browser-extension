@@ -17,7 +17,7 @@
   "content_scripts": [
     {
       "matches": ["*://github.com/*"],
-      "js": ["js/vendor.js", "js/github.js"]
+      "js": ["js/vendor.js", "js/githubFile.js", "js/githubPR.js"]
     }
   ],
 
