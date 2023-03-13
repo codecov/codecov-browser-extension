@@ -69,11 +69,25 @@ function createButton() {
   }
   const codecovButton = rawButton.cloneNode(true) as HTMLElement;
   codecovButton.setAttribute("data-testid", "coverage-button");
-  codecovButton.setAttribute(
-    "href",
-    document.URL.replace("github.com", "app.codecov.io/gh")
-  );
-  codecovButton.setAttribute("target", "_blank");
+  // codecovButton.setAttribute(
+  //   "href",
+  //   document.URL.replace("github.com", "app.codecov.io/gh")
+  // );
+  // codecovButton.setAttribute("target", "_blank");
+  // TODO: persist this setting
+  codecovButton.addEventListener("click", (event) => {
+    event.preventDefault();
+    const isInactive = codecovButton.getAttribute("data-inactive");
+    if (isInactive == "true") {
+      animateAndAnnotateLines();
+      codecovButton.removeAttribute("data-inactive");
+      codecovButton.style.opacity = "1";
+    } else {
+      clearAnimationAndAnnotations();
+      codecovButton.setAttribute("data-inactive", "true");
+      codecovButton.style.opacity = "0.5";
+    }
+  });
   const textNode = codecovButton.querySelector('[data-component="text"]')!;
   textNode.innerHTML = "Coverage: ...";
   rawButton.parentNode?.prepend(codecovButton);
@@ -222,8 +236,12 @@ function clearAnnotations() {
   });
 }
 
-function clear() {
-  clearButton();
+function clearAnimationAndAnnotations() {
   clearAnimation();
   clearAnnotations();
+}
+
+function clear() {
+  clearButton();
+  clearAnimationAndAnnotations();
 }
