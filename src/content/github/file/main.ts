@@ -9,7 +9,7 @@ import {
   clearAnimation,
   clearAnnotations,
 } from "../common/animation";
-import { colors, seenClassName } from "../common/constants";
+import { colors } from "../common/constants";
 
 const globals: {
   coverageReport?: FileCoverageReport;

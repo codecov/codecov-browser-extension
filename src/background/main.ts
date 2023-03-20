@@ -1,4 +1,5 @@
 import browser from "webextension-polyfill";
+
 import { MessageType } from "src/types";
 import { print } from "src/utils";
 import { Codecov } from "src/service";

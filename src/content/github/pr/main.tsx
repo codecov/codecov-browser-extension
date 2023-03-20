@@ -55,10 +55,7 @@ function createContainer() {
   const parent = document.getElementsByClassName("pr-review-tools").item(0)!;
 
   const element = (
-    <div
-      className="float-left mr-4 flex space-x-4 text-muted"
-      id="coverage-report-data"
-    >
+    <div className="float-left mr-4 flex text-muted" id="coverage-report-data">
       <div className="my-auto mr-6">Loading coverage report...</div>
     </div>
   );
@@ -97,7 +94,7 @@ function injectStyles() {
   const head = document.getElementsByTagName("head").item(0)!;
   const styles = (
     <link
-      href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css"
+      href="https://unpkg.com/basscss@8.0.2/css/basscss.min.css"
       rel="stylesheet"
     />
   );
@@ -123,13 +120,13 @@ function updateContainer(head: number, patch: number, change: number) {
 
   const element = (
     <>
-      <div className="my-auto">
+      <div className="mr2">
         Head: <strong>{head.toFixed(2)}%</strong>
       </div>
-      <div className="my-auto">
+      <div className="mx2">
         Patch: <strong>{patch.toFixed(2)}%</strong>
       </div>
-      <div className="my-auto">
+      <div className="mx2">
         Change:{" "}
         <strong
           className={clsx(
@@ -140,7 +137,7 @@ function updateContainer(head: number, patch: number, change: number) {
           {displayChange(change)}%
         </strong>
       </div>
-      <button className="btn btn-sm ml-4" onClick={handleToggleClick}>
+      <button className="btn btn-sm ml2" onClick={handleToggleClick}>
         Toggle Coverage
       </button>
     </>
