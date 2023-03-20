@@ -1,7 +1,7 @@
 import browser from "webextension-polyfill";
-import { MessageType } from "../types";
-import { print } from "../utils";
-import { Codecov } from "../service";
+import { MessageType } from "src/types";
+import { print } from "src/utils";
+import { Codecov } from "src/service";
 
 async function main(): Promise<void> {
   browser.runtime.onMessage.addListener(handleMessages);

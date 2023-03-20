@@ -5,6 +5,12 @@
     "target": "es6",
     "esModuleInterop": true,
     "sourceMap": false,
+    "baseUrl": "./",
+    "paths": {
+      "src/*": [
+        "./src/*"
+      ],
+    },
     "rootDir": "src",
     "outDir": "dist/js",
     "noEmitOnError": true,

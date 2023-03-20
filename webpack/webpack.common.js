@@ -1,6 +1,7 @@
 const path = require("path");
-const CopyPlugin = require("copy-webpack-plugin");
 const { ProvidePlugin } = require("webpack");
+const CopyPlugin = require("copy-webpack-plugin");
+const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const srcDir = path.join(__dirname, "..", "src");
 
 module.exports = {
@@ -38,6 +39,7 @@ module.exports = {
     ],
   },
   resolve: {
+    plugins: [new TsconfigPathsPlugin()],
     extensions: [".ts", ".tsx", ".js"],
   },
   plugins: [

@@ -1,13 +1,9 @@
 import browser from "webextension-polyfill";
 import alpha from "color-alpha";
 
-import {
-  FileCoverageReport,
-  CoverageStatus,
-  MessageType,
-} from "../../../types";
+import { FileCoverageReport, CoverageStatus, MessageType } from "src/types";
 import { lineSelector } from "./constants";
-import { print } from "../../../utils";
+import { print } from "src/utils";
 import {
   animateAndAnnotateLines,
   clearAnimation,

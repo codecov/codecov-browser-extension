@@ -3,20 +3,15 @@ import browser from "webextension-polyfill";
 import clsx from "clsx";
 import _ from "lodash";
 
-import { displayChange, print } from "../../../utils";
-import {
-  CoverageStatus,
-  MessageType,
-  PullCoverageReport,
-} from "../../../types";
+import { displayChange, print } from "src/utils";
+import { CoverageStatus, MessageType, PullCoverageReport } from "src/types";
 import {
   animateAndAnnotateLines,
   clearAnimation,
   clearAnnotations,
 } from "../common/animation";
 import { lineSelector } from "./constants";
-import { colors, seenClassName } from "../common/constants";
-import { MouseEventHandler } from "react";
+import { colors } from "../common/constants";
 
 const globals: {
   coverageReport?: PullCoverageReport;
@@ -109,7 +104,7 @@ function injectStyles() {
   head.append(styles);
 }
 
-const handleToggleClick: MouseEventHandler = (event) => {
+const handleToggleClick: React.MouseEventHandler = (event) => {
   const button = event.target as HTMLElement;
   const isInactive = button.getAttribute("data-inactive");
   if (isInactive == "true") {
