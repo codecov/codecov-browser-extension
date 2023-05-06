@@ -17,6 +17,8 @@ async function handleMessages(message: { type: MessageType; payload: any }) {
       return Codecov.fetchCommitReport(message.payload);
     case MessageType.FETCH_PR_COMPARISON:
       return Codecov.fetchPRComparison(message.payload);
+    case MessageType.FETCH_FLAGS_LIST:
+      return Codecov.listFlags(message.payload);
   }
 }
 

@@ -20,6 +20,7 @@
     "lodash": "^4.17.21",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "tether-drop": "^1.4.2",
     "webext-patterns": "^1.2.0",
     "webextension-polyfill": "^0.10.0"
   },
@@ -28,6 +29,7 @@
     "@types/lodash": "^4.14.191",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
+    "@types/tether-drop": "^1.4.9",
     "@types/webextension-polyfill": "^0.10.0",
     "autoprefixer": "^10.4.14",
     "copy-webpack-plugin": "^9.0.1",
