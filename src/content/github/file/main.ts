@@ -12,8 +12,10 @@ import {
 import { colors } from "../common/constants";
 
 const globals: {
-  coverageReport?: FileCoverageReport;
-} = {};
+  coverageReport: FileCoverageReport;
+} = {
+  coverageReport: {},
+};
 
 async function main(): Promise<void> {
   await execute();
@@ -38,15 +40,16 @@ async function execute(): Promise<void> {
   createButton();
 
   const coverageReport = await getCoverageReport(urlMetadata);
-  if (!coverageReport.files) {
+  if (coverageReport.files) {
+    const fileReport = coverageReport.files[0];
+    updateButton(`Coverage: ${fileReport.totals.coverage}%`);
+    globals.coverageReport = Object.fromEntries(fileReport.line_coverage);
+  } else {
     print("file not found in report");
     updateButton(`Coverage: N/A`);
-    return;
+    globals.coverageReport = {};
   }
-  const fileReport = coverageReport.files[0];
-  updateButton(`Coverage: ${fileReport.totals.coverage}%`);
 
-  globals.coverageReport = Object.fromEntries(fileReport.line_coverage);
   animateAndAnnotateLines(lineSelector, annotateLine);
 }
 
@@ -135,7 +138,7 @@ function updateButton(text: string) {
 
 function annotateLine(line: HTMLElement) {
   const lineNumber = parseInt(line.getAttribute("data-key")!) + 1;
-  const status = globals.coverageReport![lineNumber];
+  const status = globals.coverageReport[lineNumber];
   print(`annotating line ${lineNumber} as ${CoverageStatus[status]}`);
   if (status === CoverageStatus.COVERED) {
     line.style.backgroundColor = alpha(colors.green, 0.25);
