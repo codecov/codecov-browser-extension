@@ -17,6 +17,7 @@ import _ from "lodash";
 const globals: {
   coverageReport: FileCoverageReport;
   flagsDrop?: Drop;
+  componentsDrop?: Drop;
 } = {
   coverageReport: {},
 };
@@ -99,11 +100,34 @@ async function execute(): Promise<void> {
     .get("selected_flags")
     .then((result) => result.selected_flags);
 
+  const selectedComponents: string[] = await browser.storage.local
+    .get("selected_components")
+    .then((result) => result.selected_components);
+
+  let components: string[] = [];
+  try {
+    components = await getComponents(urlMetadata);
+  } catch (e) {}
+  if (components.length > 0) {
+    await createComponentsButton(components);
+  }
+
   let coverageReport: any;
-  if (selectedFlags.length > 0) {
-    const coverageReports = await Promise.all(
-      selectedFlags.map((flag) => getCoverageReport(urlMetadata, flag))
-    );
+  if (selectedFlags.length > 0 || selectedComponents.length > 0) {
+    let coverageReports = [];
+    if (selectedFlags.length > 0) {
+      coverageReports = await Promise.all(
+        selectedFlags.map((flag) =>
+          getCoverageReport(urlMetadata, flag, undefined)
+        )
+      );
+    } else {
+      coverageReports = await Promise.all(
+        selectedComponents.map((component) =>
+          getCoverageReport(urlMetadata, undefined, component)
+        )
+      );
+    }
     coverageReport = coverageReports
       .map((report) => {
         if (report.files?.length) {
@@ -136,7 +160,7 @@ async function execute(): Promise<void> {
       globals.coverageReport = {};
     }
   } else {
-    coverageReport = await getCoverageReport(urlMetadata, undefined);
+    coverageReport = await getCoverageReport(urlMetadata, undefined, undefined);
     if (coverageReport.files?.length) {
       const fileReport = coverageReport.files[0];
       updateButton(`Coverage: ${fileReport.totals.coverage}%`);
@@ -197,7 +221,32 @@ async function handleFlagClick(
     );
   }
   await chrome.storage.local.set({
+    selected_components: [],
+  });
+  await chrome.storage.local.set({
     selected_flags,
+  });
+  clear();
+  execute();
+}
+
+async function handleComponentClick(
+  selected_components: string[],
+  input_components: string[],
+  add: Boolean
+) {
+  if (add) {
+    selected_components = selected_components.concat(input_components);
+  } else {
+    selected_components = selected_components.filter(
+      (flag) => !input_components.includes(flag)
+    );
+  }
+  await chrome.storage.local.set({
+    selected_flags: [],
+  });
+  await chrome.storage.local.set({
+    selected_components,
   });
   clear();
   execute();
@@ -272,6 +321,80 @@ async function createFlagsButton(flags: string[]) {
   });
 }
 
+async function createComponentsButton(components: string[]) {
+  const editButton = document
+    .querySelector('[data-testid="edit-button"]')!
+    .closest("div")!;
+  const componentsButton = editButton.cloneNode(true) as HTMLElement;
+  componentsButton.setAttribute("data-testid", "components-button");
+  const textNode = componentsButton.querySelector("a")!;
+  textNode.innerHTML = "";
+  textNode.href = "javascript:void(0)";
+  textNode.parentElement!.ariaLabel = "Filter coverage by component";
+  textNode.style.padding = "0 30px";
+  textNode.style.width = "96px";
+  textNode.appendChild(<span>Components</span>);
+  const coverageButton = document.querySelector(
+    '[data-testid="coverage-button"]'
+  )!;
+  coverageButton.insertAdjacentElement("afterend", componentsButton);
+
+  const selected_components = await browser.storage.local
+    .get("selected_components")
+    .then((result) => result.selected_components || []);
+
+  // if (flag) {
+  //   flagsButton.style.border = "1px solid rgb(45, 164, 78)";
+  //   flagsButton.style.borderRadius = "7px";
+  // }
+
+  const allSelected = _.isEqual(components, selected_components);
+
+  const componentsList = (
+    <ul className="list-reset">
+      <li
+        className="cursor-pointer px1"
+        onClick={() => handleComponentClick([], components, !allSelected)}
+      >
+        Select {allSelected ? "None" : "All"}
+      </li>
+      {components.map((component: string) => {
+        const isSelected = selected_components.indexOf(component) > -1;
+        return (
+          <>
+            <hr className="my1 mxn2" />
+            <li
+              className="cursor-pointer"
+              onClick={() =>
+                handleComponentClick(
+                  selected_components,
+                  [component],
+                  !isSelected
+                )
+              }
+            >
+              <input
+                type="checkbox"
+                className="align-middle"
+                checked={isSelected}
+              />
+              <span className="pl1 align-middle">{component}</span>
+            </li>
+          </>
+        );
+      })}
+    </ul>
+  );
+
+  globals.componentsDrop = new Drop({
+    target: componentsButton,
+    content: componentsList,
+    classes: "drop-theme-arrows z1 bg-white",
+    position: "bottom right",
+    openOn: "click",
+  });
+}
+
 function calculateCoveragePct(): number {
   const x = Object.entries(globals.coverageReport);
   const totalLines = x.length;
@@ -307,9 +430,27 @@ async function getFlags(url: { [key: string]: string }): Promise<string[]> {
   return flagsResponse.data.results.map((f: any) => f.flag_name);
 }
 
+async function getComponents(url: {
+  [key: string]: string;
+}): Promise<string[]> {
+  const payload = {
+    service: "github",
+    owner: url.owner,
+    repo: url.repo,
+  };
+
+  const componentsResponse = await browser.runtime.sendMessage({
+    type: MessageType.FETCH_COMPONENTS_LIST,
+    payload,
+  });
+
+  return componentsResponse.data.map((c: any) => c.component_id);
+}
+
 async function getCoverageReport(
   url: { [key: string]: string },
-  flag: string | undefined
+  flag: string | undefined,
+  component_id: string | undefined
 ) {
   const commonPayload = {
     service: "github",
@@ -317,6 +458,7 @@ async function getCoverageReport(
     repo: url.repo,
     path: url.path,
     flag,
+    component_id,
   };
 
   // TODO: check if codecov can figure out whether branch or sha
@@ -372,7 +514,9 @@ function clearLineAnnotation(line: HTMLElement) {
 function clearButtons() {
   document.querySelector('[data-testid="coverage-button"]')?.remove();
   document.querySelector('[data-testid="flags-button"]')?.remove();
+  document.querySelector('[data-testid="components-button"]')?.remove();
   globals.flagsDrop?.remove();
+  globals.componentsDrop?.remove();
 }
 
 function clearAnimationAndAnnotations() {
