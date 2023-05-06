@@ -66,8 +66,9 @@ function injectUtils() {
         border-bottom-color: white !important;
       }
       .drop-content ul {
-        overflow: scroll;
+        overflow-y: auto;
         max-height: 400px;
+        padding-right: 16px;
       }
       `}
     </style>
@@ -113,7 +114,7 @@ async function execute(): Promise<void> {
   }
 
   let coverageReport: any;
-  if (selectedFlags.length > 0 || selectedComponents.length > 0) {
+  if (selectedFlags?.length > 0 || selectedComponents?.length > 0) {
     let coverageReports = [];
     if (selectedFlags.length > 0) {
       coverageReports = await Promise.all(
@@ -153,7 +154,7 @@ async function execute(): Promise<void> {
     if (!_.isEmpty(coverageReport)) {
       globals.coverageReport = coverageReport;
       const coveragePct = calculateCoveragePct();
-      updateButton(`Coverage: ${coveragePct}%`);
+      updateButton(`Coverage: ${coveragePct.toFixed(2)}%`);
     } else {
       print("file not found in report");
       updateButton(`Coverage: N/A`);
