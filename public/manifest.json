@@ -25,7 +25,7 @@
     "service_worker": "js/background.js"
   },
 
-  "permissions": ["scripting", "storage"],
+  "permissions": ["storage"],
 
   "host_permissions": ["https://api.codecov.io/*"]
 }
