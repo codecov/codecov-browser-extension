@@ -107,11 +107,11 @@ const handleToggleClick: React.MouseEventHandler = (event) => {
   if (isInactive == "true") {
     animateAndAnnotateLines(lineSelector, annotateLine);
     button.removeAttribute("data-inactive");
-    button.style.opacity = "1";
+    button.innerText = "Hide Coverage"
   } else {
     clearAnimationAndAnnotations();
     button.setAttribute("data-inactive", "true");
-    button.style.opacity = "0.5";
+    button.innerText = "Show Coverage"
   }
 };
 
@@ -138,7 +138,7 @@ function updateContainer(head: number, patch: number, change: number) {
         </strong>
       </div>
       <button className="btn btn-sm ml2" onClick={handleToggleClick}>
-        Toggle Coverage
+        Hide Coverage
       </button>
     </>
   );
