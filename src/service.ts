@@ -14,7 +14,8 @@ export class Codecov {
   }
 
   static async fetchCommitReport(payload: any): Promise<any> {
-    const { service, owner, repo, sha, branch, path } = payload;
+    const { service, owner, repo, sha, branch, path, flag, component_id } =
+      payload;
 
     const url = new URL(
       `${this.baseUrl}/${service}/${owner}/repos/${repo}/report`
@@ -23,7 +24,10 @@ export class Codecov {
     const params = { path };
 
     url.search = new URLSearchParams(
-      Object.assign(params, _.omitBy({ branch, sha }, _.isNil))
+      Object.assign(
+        params,
+        _.omitBy({ branch, sha, flag, component_id }, _.isNil)
+      )
     ).toString();
 
     const response = await fetch(url.toString());
@@ -44,6 +48,38 @@ export class Codecov {
 
     const params = { pullid };
     url.search = new URLSearchParams(params).toString();
+    const response = await fetch(url.toString());
+    const data = await response.json();
+
+    return {
+      ok: response.ok,
+      data,
+    };
+  }
+
+  static async listFlags(payload: any): Promise<any> {
+    const { service, owner, repo } = payload;
+
+    const url = new URL(
+      `${this.baseUrl}/${service}/${owner}/repos/${repo}/flags`
+    );
+
+    const response = await fetch(url.toString());
+    const data = await response.json();
+
+    return {
+      ok: response.ok,
+      data,
+    };
+  }
+
+  static async listComponents(payload: any): Promise<any> {
+    const { service, owner, repo } = payload;
+
+    const url = new URL(
+      `${this.baseUrl}/${service}/${owner}/repos/${repo}/components`
+    );
+
     const response = await fetch(url.toString());
     const data = await response.json();
 

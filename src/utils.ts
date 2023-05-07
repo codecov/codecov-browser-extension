@@ -1,6 +1,6 @@
 export function print(statement: string) {
   const prefix = `☂️ codecov`;
-  console.log(`${prefix} :: ${statement}`);
+  // console.log(`${prefix} :: ${statement}`);
 }
 
 export function displayChange(number: number) {

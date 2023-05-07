@@ -7,7 +7,7 @@ const srcDir = path.join(__dirname, "..", "src");
 module.exports = {
   entry: {
     background: path.join(srcDir, "background", "main.ts"),
-    githubFile: path.join(srcDir, "content", "github", "file", "main.ts"),
+    githubFile: path.join(srcDir, "content", "github", "file", "main.tsx"),
     githubPR: path.join(srcDir, "content", "github", "pr", "main.tsx"),
     popup: path.join(srcDir, "popup", "main.tsx"),
     options: path.join(srcDir, "options", "main.tsx"),
