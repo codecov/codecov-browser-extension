@@ -1,0 +1,37 @@
+{
+  "manifest_version": 3,
+
+  "name": "Codecov",
+  "description": "Codecov Browser Extension",
+  "version": "0.1.0",
+
+  "options_ui": {
+    "page": "options.html"
+  },
+
+  "action": {
+    "default_icon": "codecov-circle.png",
+    "default_popup": "popup.html"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["*://github.com/*"],
+      "js": ["js/vendor.js", "js/githubFile.js", "js/githubPR.js"]
+    }
+  ],
+
+  "background": {
+    "scripts": ["js/background.js"]
+  },
+
+  "permissions": ["storage"],
+
+  "host_permissions": ["https://api.codecov.io/*"],
+
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "{f3924b0d-e29f-4593-b605-084b3d71ed9d}"
+    }
+  }
+}
