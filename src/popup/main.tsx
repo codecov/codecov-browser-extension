@@ -18,7 +18,16 @@ const Popup = () => {
         {/*</div>*/}
       </div>
       <div className="w-[28rem]">
-        <div className="p-6">WIP</div>
+        <div className="p-6">
+          The Codecov Browser Extension is currently in Beta. Issues and
+          feedback are welcome at{" "}
+          <a
+            href="https://github.com/codecov/codecov-browser-extension/issues"
+            target="_blank"
+          >
+            https://github.com/codecov/codecov-browser-extension/issues{" "}
+          </a>
+        </div>
       </div>
     </div>
   );
