@@ -12,7 +12,7 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: |
-          cp dist dist-firefox
+          cp -r dist dist-firefox
           cp dist-firefox/manifest.firefox.json dist-firefox/manifest.json
       - name: Publish to Chrome
         working-directory: dist
