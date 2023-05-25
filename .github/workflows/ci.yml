@@ -1,6 +1,7 @@
 name: ci
 on:
-  workflow_dispatch:
+  release:
+    types: [published]
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -11,6 +12,14 @@ jobs:
           node-version: '18.x'
       - run: npm ci
       - run: npm run build
+      - run: |
+          apt update && apt install -y jq
+          jq --arg version "$VERSION" '.version=$version' dist/manifest.json > manifest.tmp.json \
+            && mv manifest.tmp.json dist/manifest.json
+          jq --arg version "$VERSION" '.version=$version' dist/manifest.firefox.json > manifest.tmp.json \
+            && mv manifest.tmp.json dist/manifest.firefox.json
+        env:
+          VERSION: ${{ github.event.release.tag_name }}
       - run: |
           cp -r dist dist-firefox
           cp dist-firefox/manifest.firefox.json dist-firefox/manifest.json
