@@ -3,8 +3,10 @@ import browser from "webextension-polyfill";
 import alpha from "color-alpha";
 import Drop from "tether-drop";
 import _ from "lodash";
+import "tether-drop/dist/css/drop-theme-arrows.css"
 
 import "src/basscss.css";
+import "./style.css";
 import { CoverageStatus, FileCoverageReport, MessageType } from "src/types";
 import { lineSelector } from "./constants";
 import { print } from "src/utils";
@@ -27,7 +29,6 @@ const globals: {
 // https://circleci.com/blog/continuously-deploy-a-chrome-extension/
 
 async function main(): Promise<void> {
-  injectUtils();
   await execute();
   // this event discovered by "reverse-engineering GitHub"
   // https://github.com/refined-github/refined-github/blob/main/contributing.md#reverse-engineering-github
@@ -38,39 +39,6 @@ async function main(): Promise<void> {
   });
 }
 
-function injectUtils() {
-  const dropJs = (
-    <>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/tether-drop/1.4.2/js/drop.min.js" />
-      <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/tether-drop/1.4.2/css/drop-theme-arrows.min.css"
-      />
-    </>
-  );
-  const customCss = (
-    <style>
-      {`
-      .drop-content {
-        margin-top: 5px !important;
-        background: white !important;
-        font-size: 13px !important;
-      }
-      .drop-content::before {
-        visibility: hidden;
-        border-bottom-color: white !important;
-      }
-      .drop-content ul {
-        overflow-y: auto;
-        max-height: 400px;
-        padding-right: 16px;
-      }
-      `}
-    </style>
-  );
-  document.head.appendChild(dropJs);
-  document.head.appendChild(customCss);
-}
 
 async function execute(): Promise<void> {
   const urlMetadata = getMetadataFromURL();
