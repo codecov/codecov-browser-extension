@@ -1,0 +1,14 @@
+.drop-content {
+  margin-top: 5px !important;
+  background: white !important;
+  font-size: 13px !important;
+}
+.drop-content::before {
+  visibility: hidden;
+  border-bottom-color: white !important;
+}
+.drop-content ul {
+  overflow-y: auto;
+  max-height: 400px;
+  padding-right: 16px;
+}

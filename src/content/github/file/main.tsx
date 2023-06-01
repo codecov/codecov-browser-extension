@@ -2,7 +2,11 @@ import React from "dom-chef";
 import browser from "webextension-polyfill";
 import alpha from "color-alpha";
 import Drop from "tether-drop";
+import _ from "lodash";
+import "tether-drop/dist/css/drop-theme-arrows.css";
 
+import "src/basscss.css";
+import "./style.css";
 import { CoverageStatus, FileCoverageReport, MessageType } from "src/types";
 import { lineSelector } from "./constants";
 import { print } from "src/utils";
@@ -12,7 +16,6 @@ import {
   clearAnnotations,
 } from "../common/animation";
 import { colors } from "../common/constants";
-import _ from "lodash";
 
 const globals: {
   coverageReport: FileCoverageReport;
@@ -26,7 +29,6 @@ const globals: {
 // https://circleci.com/blog/continuously-deploy-a-chrome-extension/
 
 async function main(): Promise<void> {
-  injectUtils();
   await execute();
   // this event discovered by "reverse-engineering GitHub"
   // https://github.com/refined-github/refined-github/blob/main/contributing.md#reverse-engineering-github
@@ -35,47 +37,6 @@ async function main(): Promise<void> {
     clear();
     execute();
   });
-}
-
-function injectUtils() {
-  const dropJs = (
-    <>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/tether-drop/1.4.2/js/drop.min.js" />
-      <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/tether-drop/1.4.2/css/drop-theme-arrows.min.css"
-      />
-    </>
-  );
-  const bassCss = (
-    <link
-      href="https://unpkg.com/basscss@8.0.2/css/basscss.min.css"
-      rel="stylesheet"
-    />
-  );
-  const customCss = (
-    <style>
-      {`
-      .drop-content {
-        margin-top: 5px !important;
-        background: white !important;
-        font-size: 13px !important;
-      }
-      .drop-content::before {
-        visibility: hidden;
-        border-bottom-color: white !important;
-      }
-      .drop-content ul {
-        overflow-y: auto;
-        max-height: 400px;
-        padding-right: 16px;
-      }
-      `}
-    </style>
-  );
-  document.head.appendChild(dropJs);
-  document.head.appendChild(bassCss);
-  document.head.appendChild(customCss);
 }
 
 async function execute(): Promise<void> {
@@ -282,9 +243,9 @@ async function createFlagsButton(flags: string[]) {
   const allSelected = _.isEqual(flags, selected_flags);
 
   const flagsList = (
-    <ul className="list-reset">
+    <ul className="codecov-list-reset">
       <li
-        className="cursor-pointer px1"
+        className="cursor-pointer codecov-px1"
         onClick={() => handleFlagClick([], flags, !allSelected)}
       >
         Select {allSelected ? "None" : "All"}
@@ -293,7 +254,7 @@ async function createFlagsButton(flags: string[]) {
         const isSelected = selected_flags.indexOf(flag) > -1;
         return (
           <>
-            <hr className="my1 mxn2" />
+            <hr className="codecov-my1 codecov-mxn2" />
             <li
               className="cursor-pointer"
               onClick={() =>
@@ -302,10 +263,10 @@ async function createFlagsButton(flags: string[]) {
             >
               <input
                 type="checkbox"
-                className="align-middle"
+                className="codecov-align-middle"
                 checked={isSelected}
               />
-              <span className="pl1 align-middle">{flag}</span>
+              <span className="codecov-pl1 codecov-align-middle">{flag}</span>
             </li>
           </>
         );
@@ -316,7 +277,7 @@ async function createFlagsButton(flags: string[]) {
   globals.flagsDrop = new Drop({
     target: flagsButton,
     content: flagsList,
-    classes: "drop-theme-arrows z1 bg-white",
+    classes: "drop-theme-arrows codecov-z1 codecov-bg-white",
     position: "bottom right",
     openOn: "click",
   });
@@ -352,9 +313,9 @@ async function createComponentsButton(components: string[]) {
   const allSelected = _.isEqual(components, selected_components);
 
   const componentsList = (
-    <ul className="list-reset">
+    <ul className="codecov-list-reset">
       <li
-        className="cursor-pointer px1"
+        className="cursor-pointer codecov-px1"
         onClick={() => handleComponentClick([], components, !allSelected)}
       >
         Select {allSelected ? "None" : "All"}
@@ -363,7 +324,7 @@ async function createComponentsButton(components: string[]) {
         const isSelected = selected_components.indexOf(component) > -1;
         return (
           <>
-            <hr className="my1 mxn2" />
+            <hr className="codecov-my1 codecov-mxn2" />
             <li
               className="cursor-pointer"
               onClick={() =>
@@ -376,10 +337,12 @@ async function createComponentsButton(components: string[]) {
             >
               <input
                 type="checkbox"
-                className="align-middle"
+                className="codecov-align-middle"
                 checked={isSelected}
               />
-              <span className="pl1 align-middle">{component}</span>
+              <span className="codecov-pl1 codecov-align-middle">
+                {component}
+              </span>
             </li>
           </>
         );
@@ -390,7 +353,7 @@ async function createComponentsButton(components: string[]) {
   globals.componentsDrop = new Drop({
     target: componentsButton,
     content: componentsList,
-    classes: "drop-theme-arrows z1 bg-white",
+    classes: "drop-theme-arrows codecov-z1 codecov-bg-white",
     position: "bottom right",
     openOn: "click",
   });
