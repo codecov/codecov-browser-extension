@@ -3,6 +3,7 @@ import browser from "webextension-polyfill";
 import clsx from "clsx";
 import _ from "lodash";
 
+import "src/basscss.css";
 import { displayChange, print } from "src/utils";
 import { CoverageStatus, MessageType, PullCoverageReport } from "src/types";
 import {
@@ -18,8 +19,6 @@ const globals: {
 } = {};
 
 async function main() {
-  injectStyles();
-
   document.addEventListener("soft-nav:end", execute);
 
   await execute();
@@ -55,8 +54,13 @@ function createContainer() {
   const parent = document.getElementsByClassName("pr-review-tools").item(0)!;
 
   const element = (
-    <div className="float-left mr-4 flex text-muted" id="coverage-report-data">
-      <div className="my-auto mr-6">Loading coverage report...</div>
+    <div
+      className="codecov-flex float-left mr-4"
+      id="coverage-report-data"
+    >
+      <div className="my-auto mr-6">
+        Loading coverage report...
+      </div>
     </div>
   );
 
@@ -90,28 +94,17 @@ async function getPRComparison(url: any) {
   return response.data;
 }
 
-function injectStyles() {
-  const head = document.getElementsByTagName("head").item(0)!;
-  const styles = (
-    <link
-      href="https://unpkg.com/basscss@8.0.2/css/basscss.min.css"
-      rel="stylesheet"
-    />
-  );
-  head.append(styles);
-}
-
 const handleToggleClick: React.MouseEventHandler = (event) => {
   const button = event.target as HTMLElement;
   const isInactive = button.getAttribute("data-inactive");
   if (isInactive == "true") {
     animateAndAnnotateLines(lineSelector, annotateLine);
     button.removeAttribute("data-inactive");
-    button.innerText = "Hide Coverage"
+    button.innerText = "Hide Coverage";
   } else {
     clearAnimationAndAnnotations();
     button.setAttribute("data-inactive", "true");
-    button.innerText = "Show Coverage"
+    button.innerText = "Show Coverage";
   }
 };
 
@@ -119,28 +112,26 @@ function updateContainer(head: number, patch: number, change: number) {
   const parent = document.getElementById("coverage-report-data")!;
 
   const element = (
-    <>
-      <div className="mr2">
+    <div className="codecov-flex codecov-items-center">
+      <div className="codecov-mr2">
         Head: <strong>{head.toFixed(2)}%</strong>
       </div>
-      <div className="mx2">
+      <div className="codecov-mx2">
         Patch: <strong>{patch.toFixed(2)}%</strong>
       </div>
-      <div className="mx2">
+      <div className="codecov-mx2">
         Change:{" "}
-        <strong
-          className={clsx(
-            change > 0 && "bg-green-300",
-            change < 0 && "bg-red-300"
-          )}
-        >
+        <strong>
           {displayChange(change)}%
         </strong>
       </div>
-      <button className="btn btn-sm ml2" onClick={handleToggleClick}>
+      <button
+        className="btn btn-sm ml-2"
+        onClick={handleToggleClick}
+      >
         Hide Coverage
       </button>
-    </>
+    </div>
   );
 
   parent.replaceChildren(element);
@@ -150,7 +141,9 @@ function showError() {
   const parent = document.getElementById("coverage-report-data")!;
 
   const element = (
-    <div className="my-auto mr-6">Coverage report not available</div>
+    <div className="my-auto mr-6">
+      Coverage report not available
+    </div>
   );
 
   parent.replaceChildren(element);
