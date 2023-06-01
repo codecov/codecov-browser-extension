@@ -3,7 +3,7 @@ import browser from "webextension-polyfill";
 import alpha from "color-alpha";
 import Drop from "tether-drop";
 import _ from "lodash";
-import "tether-drop/dist/css/drop-theme-arrows.css"
+import "tether-drop/dist/css/drop-theme-arrows.css";
 
 import "src/basscss.css";
 import "./style.css";
@@ -38,7 +38,6 @@ async function main(): Promise<void> {
     execute();
   });
 }
-
 
 async function execute(): Promise<void> {
   const urlMetadata = getMetadataFromURL();
@@ -341,7 +340,9 @@ async function createComponentsButton(components: string[]) {
                 className="codecov-align-middle"
                 checked={isSelected}
               />
-              <span className="codecov-pl1 codecov-align-middle">{component}</span>
+              <span className="codecov-pl1 codecov-align-middle">
+                {component}
+              </span>
             </li>
           </>
         );

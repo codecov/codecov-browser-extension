@@ -54,13 +54,8 @@ function createContainer() {
   const parent = document.getElementsByClassName("pr-review-tools").item(0)!;
 
   const element = (
-    <div
-      className="codecov-flex float-left mr-4"
-      id="coverage-report-data"
-    >
-      <div className="my-auto mr-6">
-        Loading coverage report...
-      </div>
+    <div className="codecov-flex float-left mr-4" id="coverage-report-data">
+      <div className="my-auto mr-6">Loading coverage report...</div>
     </div>
   );
 
@@ -120,15 +115,9 @@ function updateContainer(head: number, patch: number, change: number) {
         Patch: <strong>{patch.toFixed(2)}%</strong>
       </div>
       <div className="codecov-mx2">
-        Change:{" "}
-        <strong>
-          {displayChange(change)}%
-        </strong>
+        Change: <strong>{displayChange(change)}%</strong>
       </div>
-      <button
-        className="btn btn-sm ml-2"
-        onClick={handleToggleClick}
-      >
+      <button className="btn btn-sm ml-2" onClick={handleToggleClick}>
         Hide Coverage
       </button>
     </div>
@@ -141,9 +130,7 @@ function showError() {
   const parent = document.getElementById("coverage-report-data")!;
 
   const element = (
-    <div className="my-auto mr-6">
-      Coverage report not available
-    </div>
+    <div className="my-auto mr-6">Coverage report not available</div>
   );
 
   parent.replaceChildren(element);
