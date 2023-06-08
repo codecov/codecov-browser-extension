@@ -155,11 +155,19 @@ function transformReport(filesReport: any) {
 }
 
 function annotateLine(line: HTMLElement) {
-  const button = line.querySelector("button")!;
-  const file = button.getAttribute("data-path")!;
-  const lineNumber = button.getAttribute("data-line")!;
+  if (line.getAttribute("data-split-side") === "left") {
+    // in PR diff view, don't annotate line on left
+    // using this approach instead of directly using selector for line on right side
+    // because logged out view only shows one pane (instead of diff view)
+    return;
+  }
+  const lineNumberContainer =
+    line.parentElement!.querySelector(".js-blob-rnum")!;
+  const lineNumber = lineNumberContainer.getAttribute("data-line-number")!;
+  const fileNameContainer = line.closest(".js-file")!;
+  const fileName = fileNameContainer.getAttribute("data-tagsearch-path")!;
   const status =
-    globals.coverageReport![file]?.lines[lineNumber]?.coverage["head"];
+    globals.coverageReport![fileName]?.lines[lineNumber]?.coverage["head"];
   if (status == null) {
     return;
   }
