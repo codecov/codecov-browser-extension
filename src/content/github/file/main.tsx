@@ -25,9 +25,6 @@ const globals: {
   coverageReport: {},
 };
 
-// TODO: set up CI
-// https://circleci.com/blog/continuously-deploy-a-chrome-extension/
-
 async function main(): Promise<void> {
   await execute();
   // this event discovered by "reverse-engineering GitHub"
@@ -304,11 +301,6 @@ async function createComponentsButton(components: string[]) {
   const selected_components = await browser.storage.local
     .get("selected_components")
     .then((result) => result.selected_components || []);
-
-  // if (flag) {
-  //   flagsButton.style.border = "1px solid rgb(45, 164, 78)";
-  //   flagsButton.style.borderRadius = "7px";
-  // }
 
   const allSelected = _.isEqual(components, selected_components);
 
