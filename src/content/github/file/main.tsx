@@ -80,13 +80,27 @@ async function execute(): Promise<void> {
     });
   }
 
+  // TODO: allow setting selected flags / components for different files at the same time
+
   const selectedFlags: string[] = await browser.storage.local
     .get(flagsStorageKey)
     .then((result) => result.selected_flags);
+  if (
+    selectedFlags.length > 0 &&
+    _.intersection(flags, selectedFlags).length === 0
+  ) {
+    await handleFlagClick([]);
+  }
 
   const selectedComponents: string[] = await browser.storage.local
     .get(componentsStorageKey)
     .then((result) => result.selected_components);
+  if (
+    selectedComponents.length > 0 &&
+    _.intersection(components, selectedComponents).length === 0
+  ) {
+    await handleComponentClick([]);
+  }
 
   let coverageReport: any;
   if (selectedFlags?.length > 0 || selectedComponents?.length > 0) {
