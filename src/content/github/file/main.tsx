@@ -84,7 +84,7 @@ async function execute(): Promise<void> {
 
   const selectedFlags: string[] = await browser.storage.local
     .get(flagsStorageKey)
-    .then((result) => result.selected_flags);
+    .then((result) => result.selected_flags || []);
   if (
     selectedFlags.length > 0 &&
     _.intersection(flags, selectedFlags).length === 0
@@ -94,7 +94,7 @@ async function execute(): Promise<void> {
 
   const selectedComponents: string[] = await browser.storage.local
     .get(componentsStorageKey)
-    .then((result) => result.selected_components);
+    .then((result) => result.selected_components || []);
   if (
     selectedComponents.length > 0 &&
     _.intersection(components, selectedComponents).length === 0
