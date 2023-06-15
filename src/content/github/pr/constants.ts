@@ -1,1 +1,1 @@
-export const lineSelector = '.js-file-line[data-split-side="right"]';
+export const lineSelector = ".js-file-line";
