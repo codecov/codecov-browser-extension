@@ -1,10 +1,9 @@
 import React from "dom-chef";
 import browser from "webextension-polyfill";
-import clsx from "clsx";
 import _ from "lodash";
 
 import "src/basscss.css";
-import { displayChange, print } from "src/utils";
+import { displayChange } from "src/utils";
 import { CoverageStatus, MessageType, PullCoverageReport } from "src/types";
 import {
   animateAndAnnotateLines,
@@ -27,7 +26,6 @@ async function main() {
 async function execute() {
   const urlMetadata = getMetadataFromURL();
   if (!urlMetadata) {
-    print("url does not match PR view");
     return;
   }
 
@@ -183,13 +181,9 @@ function annotateLine(line: HTMLElement) {
   }
 }
 
-function clearLineAnnotation(line: HTMLElement) {
-  line.style.borderLeft = "inherit";
-}
-
 function clearAnimationAndAnnotations() {
   clearAnimation(lineSelector, annotateLine);
-  clearAnnotations(clearLineAnnotation);
+  clearAnnotations((line: HTMLElement) => (line.style.borderLeft = "inherit"));
 }
 
-main().catch(console.warn.bind(print));
+main();
