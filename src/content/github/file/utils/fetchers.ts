@@ -15,7 +15,9 @@ export async function getFlags(url: {
     payload,
   });
 
-  return flagsResponse.data.results.map((f: any) => f.flag_name);
+  const flags = flagsResponse.ok ? flagsResponse.data.results : [];
+
+  return flags.map((f: any) => f.flag_name);
 }
 
 export async function getComponents(url: {
@@ -32,7 +34,9 @@ export async function getComponents(url: {
     payload,
   });
 
-  return componentsResponse.data.map((c: any) => c.component_id);
+  const components = componentsResponse.ok ? componentsResponse.data : [];
+
+  return components.map((c: any) => c.component_id);
 }
 
 export async function getCoverageReport(
