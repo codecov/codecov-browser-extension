@@ -1,4 +1,6 @@
 # Codecov Browser Extension for GitHub
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fcodecov%2Fcodecov-browser-extension.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fcodecov%2Fcodecov-browser-extension?ref=badge_shield)
+
 
 <img width="1912" alt="image" src="https://user-images.githubusercontent.com/44864521/213549217-bed0071c-c5bc-4a12-944f-31ce15648ab7.png">
 
@@ -66,3 +68,7 @@ $ cp dist/manifest.firefox.json dist/manifest.json
 
 [Codecov](https://about.codecov.io) is the all-in-one code coverage reporting solution for any test suite - giving developers actionable insights to deploy reliable code with confidence. 
 
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fcodecov%2Fcodecov-browser-extension.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fcodecov%2Fcodecov-browser-extension?ref=badge_large)
