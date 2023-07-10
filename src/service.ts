@@ -23,7 +23,8 @@ export class Codecov {
           selfHostedCodecovApiToken
         ])
         const useSelfHosted = result[useSelfHostedStorageKey] || false;
-        if (!useSelfHosted) {
+        // self hosted not active, or is being updated
+        if (!useSelfHosted || config?.headers?.Authorization) {
           return [url, config];
         }
         const codecovUrl = result[selfHostedCodecovURLStorageKey];
@@ -39,13 +40,17 @@ export class Codecov {
     })
   }
 
-  static async checkAuth(token: string): Promise<boolean> {
-    const url = `${this.baseUrl}/api/v2/github/codecov`;
+  static async checkAuth(payload: any): Promise<boolean> {
+    const { baseUrl, token } = payload;
+
+    const url = `${baseUrl}/api/v2/github/codecov`;
+
     const response = await fetch(url, {
       headers: {
         Authorization: `bearer ${token}`,
       },
     });
+
     return response.ok;
   }
 

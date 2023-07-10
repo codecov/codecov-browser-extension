@@ -9,6 +9,8 @@ async function main(): Promise<void> {
 
 async function handleMessages(message: { type: MessageType; payload: any }) {
   switch (message.type) {
+    case MessageType.CHECK_AUTH:
+      return Codecov.checkAuth(message.payload);
     case MessageType.FETCH_COMMIT_REPORT:
       return Codecov.fetchCommitReport(message.payload);
     case MessageType.FETCH_PR_COMPARISON:

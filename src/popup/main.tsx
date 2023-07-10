@@ -1,6 +1,8 @@
 import React, { ChangeEvent, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import browser from "webextension-polyfill";
+import clsx from 'clsx';
+
 import "./styles.css";
 import {
   selfHostedCodecovApiToken,
@@ -8,12 +10,15 @@ import {
   selfHostedGitHubURLStorageKey,
   useSelfHostedStorageKey,
 } from "src/constants";
+import { MessageType } from "src/types";
 
 const Popup = () => {
   const [useSelfHosted, setUseSelfHosted] = useState(false);
   const [codecovUrl, setCodecovUrl] = useState("");
   const [githubUrl, setGitHubUrl] = useState("");
   const [codecovApiToken, setCodecovApiToken] = useState("");
+  const [isUrlError, setIsUrlError] = useState(false);
+  const [isTokenError, setIsTokenError] = useState(false);
 
   useEffect(() => {
     browser.storage.sync
@@ -38,10 +43,35 @@ const Popup = () => {
   const handleTextChange =
     (setter: React.Dispatch<React.SetStateAction<any>>) =>
     (e: React.ChangeEvent<HTMLInputElement>) => {
+      setIsUrlError(false);
+      setIsTokenError(false);
       setter(e.target.value);
     };
 
   const handleSave = async () => {
+
+    if (useSelfHosted) {
+      const payload = {
+        baseUrl: codecovUrl,
+        token: codecovApiToken
+      }
+
+      try {
+        const isAuthOk = await browser.runtime.sendMessage({
+          type: MessageType.CHECK_AUTH,
+          payload,
+        });
+
+        if (!isAuthOk) {
+          setIsTokenError(true);
+          return
+        }
+      } catch (error) {
+        setIsUrlError(true);
+        return;
+      }
+    }
+
     await browser.storage.sync.set({
       [useSelfHostedStorageKey]: useSelfHosted,
       [selfHostedCodecovURLStorageKey]: codecovUrl,
@@ -96,10 +126,15 @@ const Popup = () => {
                 <input
                   type="text"
                   placeholder="https://codecov.example.com"
-                  className="input input-bordered w-full"
+                  className={clsx("input input-bordered w-full", isUrlError && "border-2 border-red-500")}
                   value={codecovUrl}
                   onChange={handleTextChange(setCodecovUrl)}
                 />
+                {isUrlError && (
+                  <label className="label">
+                    <span className="label-text-alt text-red-500">Request failed</span>
+                  </label>
+                )}
               </div>
               <div>
                 <label className="label">
@@ -108,10 +143,15 @@ const Popup = () => {
                 <input
                   type="text"
                   placeholder="1a2bc3de-f45g-6hi7-8j90-12k3l45mn678"
-                  className="input input-bordered w-full"
+                  className={clsx("input input-bordered w-full", isTokenError && "border-2 border-red-500")}
                   value={codecovApiToken}
                   onChange={handleTextChange(setCodecovApiToken)}
                 />
+                {isTokenError && (
+                  <label className="label">
+                    <span className="label-text-alt text-red-500">Authentication failed</span>
+                  </label>
+                )}
               </div>
               <div>
                 <label className="label">

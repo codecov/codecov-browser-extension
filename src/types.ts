@@ -21,6 +21,7 @@ export type PullCoverageReport = {
 };
 
 export enum MessageType {
+  CHECK_AUTH = "check_auth",
   FETCH_COMMIT_REPORT = "fetch_commit_report",
   FETCH_PR_COMPARISON = "fetch_pr_comparison",
   FETCH_FLAGS_LIST = "fetch_flags_list",
