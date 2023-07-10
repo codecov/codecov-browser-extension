@@ -42,13 +42,26 @@ async function execute(): Promise<void> {
   globals.coverageButton = createCoverageButton();
 
   const flags = await getFlags(urlMetadata);
+
+  const selectedFlags: string[] = await browser.storage.local
+    .get(flagsStorageKey)
+    .then((result) => result[flagsStorageKey] || []);
+
+  // TODO: allow setting selected flags for different files at the same time
+  if (
+    selectedFlags.length > 0 &&
+    _.intersection(flags, selectedFlags).length === 0
+  ) {
+    await handleFlagClick([]);
+  }
+
   if (flags.length > 0) {
     const { button: flagsButton, list: flagsList } = await createDropdown({
       title: "Flags",
       tooltip: "Filter coverage by flag",
       options: flags,
       previousElement: globals.coverageButton,
-      storageKey: flagsStorageKey,
+      selectedOptions: selectedFlags,
       onClick: handleFlagClick,
     });
     globals.flagsButton = flagsButton;
@@ -62,6 +75,19 @@ async function execute(): Promise<void> {
   }
 
   const components = await getComponents(urlMetadata);
+
+  const selectedComponents: string[] = await browser.storage.local
+    .get(componentsStorageKey)
+    .then((result) => result[componentsStorageKey] || []);
+
+  // TODO: allow setting selected flags for different files at the same time
+  if (
+    selectedComponents.length > 0 &&
+    _.intersection(components, selectedComponents).length === 0
+  ) {
+    await handleComponentClick([]);
+  }
+
   if (components.length > 0) {
     const { button: componentsButton, list: componentsList } =
       await createDropdown({
@@ -70,7 +96,7 @@ async function execute(): Promise<void> {
         tooltip: "Filter coverage by component",
         previousElement: globals.coverageButton,
         onClick: handleComponentClick,
-        storageKey: componentsStorageKey,
+        selectedOptions: selectedComponents,
       });
     globals.componentsButton = componentsButton;
     globals.componentsDrop = new Drop({
@@ -80,28 +106,6 @@ async function execute(): Promise<void> {
       position: "bottom right",
       openOn: "click",
     });
-  }
-
-  // TODO: allow setting selected flags / components for different files at the same time
-
-  const selectedFlags: string[] = await browser.storage.local
-    .get(flagsStorageKey)
-    .then((result) => result[flagsStorageKey] || []);
-  if (
-    selectedFlags.length > 0 &&
-    _.intersection(flags, selectedFlags).length === 0
-  ) {
-    await handleFlagClick([]);
-  }
-
-  const selectedComponents: string[] = await browser.storage.local
-    .get(componentsStorageKey)
-    .then((result) => result[componentsStorageKey] || []);
-  if (
-    selectedComponents.length > 0 &&
-    _.intersection(components, selectedComponents).length === 0
-  ) {
-    await handleComponentClick([]);
   }
 
   let coverageReport: any;
