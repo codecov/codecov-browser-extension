@@ -13,38 +13,51 @@ import {
 import { MessageType } from "src/types";
 
 const Popup = () => {
+  // persisted state
   const [useSelfHosted, setUseSelfHosted] = useState(false);
   const [codecovUrl, setCodecovUrl] = useState("");
   const [githubUrl, setGitHubUrl] = useState("");
   const [codecovApiToken, setCodecovApiToken] = useState("");
+
+  // ephemeral state
   const [isUrlError, setIsUrlError] = useState(false);
   const [isTokenError, setIsTokenError] = useState(false);
+  const [isDone, setIsDone] = useState(false);
 
   useEffect(() => {
-    browser.storage.sync
-      .get([
-        useSelfHostedStorageKey,
-        selfHostedCodecovURLStorageKey,
-        selfHostedGitHubURLStorageKey,
-        selfHostedCodecovApiToken
-      ])
-      .then((result) => {
-        const _useSelfHosted = result[useSelfHostedStorageKey] || false;
-        setUseSelfHosted(_useSelfHosted);
-        const _codecovUrl = result[selfHostedCodecovURLStorageKey] || "";
-        setCodecovUrl(_codecovUrl);
-        const _githubUrl = result[selfHostedGitHubURLStorageKey] || "";
-        setGitHubUrl(_githubUrl);
-        const _codecovApiToken = result[selfHostedCodecovApiToken] || "";
-        setCodecovApiToken(_codecovApiToken);
-      });
+    loadPersistedState();
   }, []);
+
+  const loadPersistedState = () => {
+    browser.storage.sync
+    .get([
+      useSelfHostedStorageKey,
+      selfHostedCodecovURLStorageKey,
+      selfHostedGitHubURLStorageKey,
+      selfHostedCodecovApiToken
+    ])
+    .then((result) => {
+      const _useSelfHosted = result[useSelfHostedStorageKey] || false;
+      setUseSelfHosted(_useSelfHosted);
+      const _codecovUrl = result[selfHostedCodecovURLStorageKey] || "";
+      setCodecovUrl(_codecovUrl);
+      const _githubUrl = result[selfHostedGitHubURLStorageKey] || "";
+      setGitHubUrl(_githubUrl);
+      const _codecovApiToken = result[selfHostedCodecovApiToken] || "";
+      setCodecovApiToken(_codecovApiToken);
+    });
+  }
+
+  const resetEphemeralState = () => {
+    setIsUrlError(false);
+    setIsTokenError(false);
+    setIsDone(false);
+  }
 
   const handleTextChange =
     (setter: React.Dispatch<React.SetStateAction<any>>) =>
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      setIsUrlError(false);
-      setIsTokenError(false);
+      resetEphemeralState();
       setter(e.target.value);
     };
 
@@ -78,9 +91,12 @@ const Popup = () => {
       [selfHostedGitHubURLStorageKey]: githubUrl,
       [selfHostedCodecovApiToken]: codecovApiToken,
     });
+
+    setIsDone(true);
   };
 
   const handleSelfHostedClick = () => {
+    resetEphemeralState();
     setUseSelfHosted((x) => !x);
     setCodecovUrl("");
     setGitHubUrl("");
@@ -97,8 +113,8 @@ const Popup = () => {
         >
           Codecov
         </a>
-        <button className="btn btn-ghost text-white" onClick={handleSave}>
-          Save
+        <button className="btn btn-ghost text-white" onClick={handleSave} disabled={isDone}>
+          {isDone ? "Done" : "Save"}
         </button>
         {/*<div className="pr-4">*/}
         {/*  <FontAwesomeIcon icon={faCircleNotch} spin color="white" size="xl" />*/}
