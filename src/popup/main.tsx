@@ -267,7 +267,6 @@ const Popup = () => {
         )}
         <div className="divider" />
         <div>
-          The Codecov Browser Extension is currently in Beta. <br />
           Issues and feedback are welcome at{" "}
           <a
             href="https://github.com/codecov/codecov-browser-extension/issues"
