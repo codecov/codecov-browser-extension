@@ -62,8 +62,8 @@ function createContainer() {
 
 function getMetadataFromURL(): { [key: string]: string } | null {
   const regexp =
-    /github.com\/(?<owner>.+?)\/(?<repo>.+?)\/pull\/(?<id>\d+?)\/files/;
-  const matches = regexp.exec(document.URL);
+    /\/(?<owner>.+?)\/(?<repo>.+?)\/pull\/(?<id>\d+?)\/files/;
+  const matches = regexp.exec(window.location.pathname);
   const groups = matches?.groups;
   if (!groups) {
     return null;

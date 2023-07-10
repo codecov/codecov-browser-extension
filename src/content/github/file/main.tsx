@@ -221,8 +221,8 @@ function calculateCoveragePct(): number {
 
 function getMetadataFromURL(): { [key: string]: string } | null {
   const regexp =
-    /github.com\/(?<owner>.+?)\/(?<repo>.+?)\/blob\/(?<ref>.+?)\/(?<path>.+)/;
-  const matches = regexp.exec(document.URL);
+    /\/(?<owner>.+?)\/(?<repo>.+?)\/blob\/(?<ref>.+?)\/(?<path>.+)/;
+  const matches = regexp.exec(window.location.pathname);
   const groups = matches?.groups;
   if (!groups) {
     return null;
