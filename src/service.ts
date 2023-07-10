@@ -1,10 +1,46 @@
 import _ from "lodash";
+import fetchIntercept from "fetch-intercept";
+import browser from "webextension-polyfill";
+
+import {
+  selfHostedCodecovApiToken,
+  selfHostedCodecovURLStorageKey,
+  selfHostedGitHubURLStorageKey,
+  useSelfHostedStorageKey,
+} from "src/constants";
+
 
 export class Codecov {
-  static baseUrl = "https://api.codecov.io/api/v2";
+  static baseUrl = "https://api.codecov.io";
+
+  static _init() {
+    fetchIntercept.register({
+      request: async (url: string, config: any) => {
+        const result = await browser.storage.sync.get([
+          useSelfHostedStorageKey,
+          selfHostedCodecovURLStorageKey,
+          selfHostedGitHubURLStorageKey,
+          selfHostedCodecovApiToken
+        ])
+        const useSelfHosted = result[useSelfHostedStorageKey] || false;
+        if (!useSelfHosted) {
+          return [url, config];
+        }
+        const codecovUrl = result[selfHostedCodecovURLStorageKey];
+        const codecovApiToken = result[selfHostedCodecovApiToken];
+        url = url.replace(this.baseUrl, codecovUrl);
+        config = _.merge(config, {
+          headers: {
+            Authorization: `bearer ${codecovApiToken}`
+          }
+        })
+        return [url, config];
+      }
+    })
+  }
 
   static async checkAuth(token: string): Promise<boolean> {
-    const url = `${this.baseUrl}/github/codecov`;
+    const url = `${this.baseUrl}/api/v2/github/codecov`;
     const response = await fetch(url, {
       headers: {
         Authorization: `bearer ${token}`,
@@ -18,7 +54,7 @@ export class Codecov {
       payload;
 
     const url = new URL(
-      `${this.baseUrl}/${service}/${owner}/repos/${repo}/report`
+      `${this.baseUrl}/api/v2/${service}/${owner}/repos/${repo}/report`
     );
 
     const params = { path };
@@ -43,7 +79,7 @@ export class Codecov {
     const { service, owner, repo, pullid } = payload;
 
     const url = new URL(
-      `${this.baseUrl}/${service}/${owner}/repos/${repo}/compare`
+      `${this.baseUrl}/api/v2/${service}/${owner}/repos/${repo}/compare`
     );
 
     const params = { pullid };
@@ -61,7 +97,7 @@ export class Codecov {
     const { service, owner, repo } = payload;
 
     const url = new URL(
-      `${this.baseUrl}/${service}/${owner}/repos/${repo}/flags`
+      `${this.baseUrl}/api/v2/${service}/${owner}/repos/${repo}/flags`
     );
 
     const response = await fetch(url.toString());
@@ -77,7 +113,7 @@ export class Codecov {
     const { service, owner, repo } = payload;
 
     const url = new URL(
-      `${this.baseUrl}/${service}/${owner}/repos/${repo}/components`
+      `${this.baseUrl}/api/v2/${service}/${owner}/repos/${repo}/components`
     );
 
     const response = await fetch(url.toString());
@@ -89,3 +125,5 @@ export class Codecov {
     };
   }
 }
+
+Codecov._init();

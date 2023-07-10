@@ -7,7 +7,7 @@ import {
   selfHostedCodecovURLStorageKey,
   selfHostedGitHubURLStorageKey,
   useSelfHostedStorageKey,
-} from "src/content/github/file/utils/constants";
+} from "src/constants";
 
 const Popup = () => {
   const [useSelfHosted, setUseSelfHosted] = useState(false);
