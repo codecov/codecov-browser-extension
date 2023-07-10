@@ -24,6 +24,7 @@ const Popup = () => {
   const [isUrlError, setIsUrlError] = useState(false);
   const [isTokenError, setIsTokenError] = useState(false);
   const [isTabError, setIsTabError] = useState(false);
+  const [isUnregisterTabError, setIsUnregisterTabError] = useState(false);
   const [isDone, setIsDone] = useState(false);
 
   useEffect(() => {
@@ -54,6 +55,7 @@ const Popup = () => {
     setIsUrlError(false);
     setIsTokenError(false);
     setIsTabError(false);
+    setIsUnregisterTabError(false);
     setIsDone(false);
   }
 
@@ -64,13 +66,22 @@ const Popup = () => {
       setter(e.target.value);
     };
 
-  const requestContentScriptPermission = async (url: string) => {
+  const registerContentScripts = async (url: string) => {
     const payload = {
       url,
     }
 
     return browser.runtime.sendMessage({
       type: MessageType.REGISTER_CONTENT_SCRIPTS,
+      payload,
+    })
+  }
+
+  const unregisterContentScripts = async () => {
+    const payload = {}
+
+    return browser.runtime.sendMessage({
+      type: MessageType.UNREGISTER_CONTENT_SCRIPTS,
       payload,
     })
   }
@@ -98,9 +109,17 @@ const Popup = () => {
         return;
       }
 
-      const isScriptRegistered = await requestContentScriptPermission(githubUrl);
+      const isScriptRegistered = await registerContentScripts(githubUrl);
       if (!isScriptRegistered) {
         setIsTabError(true);
+        return;
+      }
+    }
+
+    if (!useSelfHosted) {
+      const isScriptUnregistered = await unregisterContentScripts();
+      if (!isScriptUnregistered) {
+        setIsUnregisterTabError(true);
         return;
       }
     }
@@ -112,6 +131,7 @@ const Popup = () => {
       [selfHostedCodecovApiToken]: codecovApiToken,
     });
 
+    resetEphemeralState();
     setIsDone(true);
   };
 
@@ -133,7 +153,7 @@ const Popup = () => {
         >
           Codecov
         </a>
-        <button className="btn btn-ghost text-white" onClick={handleSave} disabled={isDone || (useSelfHosted && !(codecovUrl && codecovApiToken && githubUrl))}>
+        <button className={clsx("btn btn-ghost text-white", isDone && "!btn-success")} onClick={handleSave} disabled={isDone || (useSelfHosted && !(codecovUrl && codecovApiToken && githubUrl))}>
           {isDone ? "Done" : "Save"}
         </button>
         {/*<div className="pr-4">*/}
@@ -148,7 +168,7 @@ const Popup = () => {
             </span>
             <input
               type="checkbox"
-              className="toggle toggle-primary"
+              className={clsx("toggle toggle-primary", isUnregisterTabError && "border-2 border-red-500")}
               checked={useSelfHosted}
               onChange={handleSelfHostedClick}
             />
@@ -200,15 +220,22 @@ const Popup = () => {
                   value={githubUrl}
                   onChange={handleTextChange(setGitHubUrl)}
                 />
-                {isTabError && (
-                  <label className="label">
-                    <span className="label-text-alt text-red-500">This URL must be loaded in the active tab</span>
-                  </label>
-                )}
+                <label className="label">
+                  <span className={clsx("label-text-alt", isTabError && "text-red-500")}>This URL must be loaded in the active tab</span>
+                </label>
               </div>
             </div>
           )}
         </div>
+        {isUnregisterTabError && (
+          <div>
+            <label className="label">
+              <span className="label-text text-red-500">
+                The self hosted GitHub instance must be loaded in the active tab
+              </span>
+            </label>
+          </div>
+        )}
         <div className="divider" />
         <div>
           The Codecov Browser Extension is currently in Beta. <br />

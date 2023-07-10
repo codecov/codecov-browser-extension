@@ -1,37 +1,13 @@
 import browser from "webextension-polyfill";
-import urlJoin from "url-join";
 
 import { MessageType } from "src/types";
 import { Codecov } from "src/service";
+import { registerContentScript, unregisterContentScript } from "./dynamic_content_scripts";
 
 async function main(): Promise<void> {
   browser.runtime.onMessage.addListener(handleMessages);
 }
 
-async function registerContentScript(payload: any): Promise<boolean> {
-  const { url } = payload;
-
-  const tabs = await browser.tabs.query({ active: true, currentWindow: true });
-  if (!tabs[0]?.url?.startsWith(url)) {
-    return false;
-  }
-
-  try {
-    await browser.scripting.unregisterContentScripts({
-      ids: [url]
-    })
-  } catch (error) {
-    // noop
-  }
-
-  await browser.scripting.registerContentScripts([{
-    id: url,
-    matches: [urlJoin(url, "/*")],
-    "js": ["js/vendor.js", "js/githubFile.js", "js/githubPR.js"]
-  }])
-
-  return true;
-}
 
 async function handleMessages(message: { type: MessageType; payload: any }) {
   switch (message.type) {
@@ -47,6 +23,8 @@ async function handleMessages(message: { type: MessageType; payload: any }) {
       return Codecov.listComponents(message.payload);
     case MessageType.REGISTER_CONTENT_SCRIPTS:
       return registerContentScript(message.payload);
+    case MessageType.UNREGISTER_CONTENT_SCRIPTS:
+      return unregisterContentScript(message.payload);
   }
 }
 
