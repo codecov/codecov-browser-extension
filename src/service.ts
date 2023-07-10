@@ -1,6 +1,7 @@
 import _ from "lodash";
 import fetchIntercept from "fetch-intercept";
 import browser from "webextension-polyfill";
+import urlJoin from "url-join";
 
 import {
   selfHostedCodecovApiToken,
@@ -29,13 +30,15 @@ export class Codecov {
         }
         const codecovUrl = result[selfHostedCodecovURLStorageKey];
         const codecovApiToken = result[selfHostedCodecovApiToken];
-        url = url.replace(this.baseUrl, codecovUrl);
-        config = _.merge(config, {
+        // update url
+        const updatedURL = urlJoin(codecovUrl, url.replace(this.baseUrl, ''))
+        // update auth header
+        const updatedConfig = _.merge(config, {
           headers: {
             Authorization: `bearer ${codecovApiToken}`
           }
         })
-        return [url, config];
+        return [updatedURL, updatedConfig];
       }
     })
   }
@@ -43,7 +46,7 @@ export class Codecov {
   static async checkAuth(payload: any): Promise<boolean> {
     const { baseUrl, token } = payload;
 
-    const url = `${baseUrl}/api/v2/github/codecov`;
+    const url = urlJoin(baseUrl, '/api/v2/github/codecov');
 
     const response = await fetch(url, {
       headers: {
@@ -58,9 +61,7 @@ export class Codecov {
     const { service, owner, repo, sha, branch, path, flag, component_id } =
       payload;
 
-    const url = new URL(
-      `${this.baseUrl}/api/v2/${service}/${owner}/repos/${repo}/report`
-    );
+    const url = new URL(`/api/v2/${service}/${owner}/repos/${repo}/report`, this.baseUrl);
 
     const params = { path };
 
@@ -83,12 +84,10 @@ export class Codecov {
   static async fetchPRComparison(payload: any): Promise<any> {
     const { service, owner, repo, pullid } = payload;
 
-    const url = new URL(
-      `${this.baseUrl}/api/v2/${service}/${owner}/repos/${repo}/compare`
-    );
-
+    const url = new URL(`/api/v2/${service}/${owner}/repos/${repo}/compare`, this.baseUrl);
     const params = { pullid };
     url.search = new URLSearchParams(params).toString();
+
     const response = await fetch(url.toString());
     const data = await response.json();
 
@@ -101,9 +100,7 @@ export class Codecov {
   static async listFlags(payload: any): Promise<any> {
     const { service, owner, repo } = payload;
 
-    const url = new URL(
-      `${this.baseUrl}/api/v2/${service}/${owner}/repos/${repo}/flags`
-    );
+    const url = new URL(`/api/v2/${service}/${owner}/repos/${repo}/flags`, this.baseUrl);
 
     const response = await fetch(url.toString());
     const data = await response.json();
@@ -117,9 +114,7 @@ export class Codecov {
   static async listComponents(payload: any): Promise<any> {
     const { service, owner, repo } = payload;
 
-    const url = new URL(
-      `${this.baseUrl}/api/v2/${service}/${owner}/repos/${repo}/components`
-    );
+    const url = new URL(`/api/v2/${service}/${owner}/repos/${repo}/components`, this.baseUrl);
 
     const response = await fetch(url.toString());
     const data = await response.json();
