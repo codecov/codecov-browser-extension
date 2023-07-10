@@ -12,6 +12,7 @@ import {
 } from "../common/animation";
 import { lineSelector } from "./constants";
 import { colors } from "../common/constants";
+import { print } from "src/utils";
 
 const globals: {
   coverageReport?: PullCoverageReport;
@@ -26,6 +27,7 @@ async function main() {
 async function execute() {
   const urlMetadata = getMetadataFromURL();
   if (!urlMetadata) {
+    print("PR not detected at current URL")
     return;
   }
 

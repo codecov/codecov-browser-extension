@@ -21,6 +21,7 @@ import {
 import { colors } from "../common/constants";
 import { createDropdown } from "./utils/dropdown";
 import { getComponents, getCoverageReport, getFlags } from "./utils/fetchers";
+import { print } from "src/utils";
 
 const globals: {
   coverageReport?: FileCoverageReport;
@@ -34,6 +35,7 @@ const globals: {
 async function execute(): Promise<void> {
   const urlMetadata = getMetadataFromURL();
   if (!urlMetadata) {
+    print("file not detected at current URL")
     return;
   }
 
