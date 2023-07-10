@@ -27,6 +27,9 @@ const Popup = () => {
   const [isUnregisterTabError, setIsUnregisterTabError] = useState(false);
   const [isDone, setIsDone] = useState(false);
 
+  const isFormInvalid = useSelfHosted && !(codecovUrl && codecovApiToken && githubUrl)
+  const isError = isUrlError || isTokenError || isTabError || isUnregisterTabError;
+
   useEffect(() => {
     loadPersistedState();
   }, []);
@@ -88,12 +91,12 @@ const Popup = () => {
 
   const handleSave = async () => {
     if (useSelfHosted) {
-      const payload = {
-        baseUrl: codecovUrl,
-        token: codecovApiToken,
-      };
-
       try {
+        const payload = {
+          baseUrl: codecovUrl,
+          token: codecovApiToken,
+        };
+
         const isAuthOk = await browser.runtime.sendMessage({
           type: MessageType.CHECK_AUTH,
           payload,
@@ -153,14 +156,14 @@ const Popup = () => {
           Codecov
         </a>
         <button
-          className={clsx("btn btn-ghost text-white", isDone && "!btn-success")}
           onClick={handleSave}
-          disabled={
-            isDone ||
-            (useSelfHosted && !(codecovUrl && codecovApiToken && githubUrl))
+          className={clsx(
+            "btn btn-ghost text-white",
+            // custom disabled state for styling
+            (isDone || isFormInvalid || isError) && "cursor-not-allowed text-opacity-50")
           }
         >
-          {isDone ? "Done" : "Save"}
+          {isDone ? "Done" : isError ? "Error" : "Save"}
         </button>
         {/*<div className="pr-4">*/}
         {/*  <FontAwesomeIcon icon={faCircleNotch} spin color="white" size="xl" />*/}
@@ -175,13 +178,19 @@ const Popup = () => {
             <input
               type="checkbox"
               className={clsx(
-                "toggle toggle-primary",
-                isUnregisterTabError && "border-2 border-red-500"
+                "toggle toggle-primary"
               )}
               checked={useSelfHosted}
               onChange={handleSelfHostedClick}
             />
           </label>
+          {/* <div className={clsx("hidden", isError && "!block")}>
+            <label className="label">
+              <span className="label-text text-red-500">
+                An error occurred
+              </span>
+            </label>
+          </div> */}
           {useSelfHosted && (
             <div className="space-y-2 px-4">
               <div>
@@ -256,15 +265,6 @@ const Popup = () => {
             </div>
           )}
         </div>
-        {isUnregisterTabError && (
-          <div>
-            <label className="label">
-              <span className="label-text text-red-500">
-                The self hosted GitHub instance must be loaded in the active tab
-              </span>
-            </label>
-          </div>
-        )}
         <div className="divider" />
         <div>
           Issues and feedback are welcome at{" "}

@@ -12,16 +12,14 @@ export async function registerContentScript(payload: any): Promise<boolean> {
     return false;
   }
 
-  try {
-    await unregisterContentScript(payload);
-  } catch (error) {
-    // noop
-  }
+  await unregisterContentScriptIfExists(payload);
+
+  const urlMatch = urlJoin(url, "/*")
 
   await browser.scripting.registerContentScripts([
     {
       id: dynamicContentScriptRegistrationId,
-      matches: [urlJoin(url, "/*")],
+      matches: [urlMatch],
       js: ["js/vendor.js", "js/githubFile.js", "js/githubPR.js"],
     },
   ]);
@@ -29,15 +27,12 @@ export async function registerContentScript(payload: any): Promise<boolean> {
   return true;
 }
 
-export async function unregisterContentScript(payload: any): Promise<boolean> {
+export async function unregisterContentScriptIfExists(payload: any): Promise<boolean> {
   const registrations = await browser.scripting.getRegisteredContentScripts({
     ids: [dynamicContentScriptRegistrationId],
   });
-  const registeredUrl = _.trimEnd(registrations[0].matches?.[0], "/*");
-
-  const tabs = await browser.tabs.query({ active: true, currentWindow: true });
-  if (!tabs[0]?.url?.startsWith(registeredUrl)) {
-    return false;
+  if (registrations.length === 0) {
+    return true;
   }
 
   await browser.scripting.unregisterContentScripts({

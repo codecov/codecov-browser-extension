@@ -4,7 +4,7 @@ import { MessageType } from "src/types";
 import { Codecov } from "src/service";
 import {
   registerContentScript,
-  unregisterContentScript,
+  unregisterContentScriptIfExists,
 } from "./dynamic_content_scripts";
 
 async function main(): Promise<void> {
@@ -26,7 +26,7 @@ async function handleMessages(message: { type: MessageType; payload: any, referr
     case MessageType.REGISTER_CONTENT_SCRIPTS:
       return registerContentScript(message.payload);
     case MessageType.UNREGISTER_CONTENT_SCRIPTS:
-      return unregisterContentScript(message.payload);
+      return unregisterContentScriptIfExists(message.payload);
   }
 }
 

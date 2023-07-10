@@ -13,7 +13,7 @@ export async function getFlags(url: {
   const flagsResponse = await browser.runtime.sendMessage({
     type: MessageType.FETCH_FLAGS_LIST,
     payload,
-    referrer: window.location.hostname,
+    referrer: window.location.href,
   });
 
   const flags = flagsResponse.ok ? flagsResponse.data.results : [];
@@ -33,7 +33,7 @@ export async function getComponents(url: {
   const componentsResponse = await browser.runtime.sendMessage({
     type: MessageType.FETCH_COMPONENTS_LIST,
     payload,
-    referrer: window.location.hostname,
+    referrer: window.location.href,
   });
 
   const components = componentsResponse.ok ? componentsResponse.data : [];
@@ -62,7 +62,7 @@ export async function getCoverageReport(
       ...commonPayload,
       sha: url.ref,
     },
-    referrer: window.location.hostname,
+    referrer: window.location.href,
   });
 
   if (shaResponse.ok) {
@@ -75,7 +75,7 @@ export async function getCoverageReport(
       ...commonPayload,
       branch: url.ref,
     },
-    referrer: window.location.hostname,
+    referrer: window.location.href,
   });
 
   return branchResponse.data;

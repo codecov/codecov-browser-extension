@@ -12,10 +12,15 @@ import {
 
 export class Codecov {
   static baseUrl = "https://api.codecov.io";
+  static checkAuthPath = "/api/v2/github/codecov";
 
   static _init() {
     fetchIntercept.register({
-      request: async (url: string, config: any) => {
+      request: async (requestUrl: string, requestConfig: any) => {
+        // use request params for auth check
+        if (new URL(requestUrl).pathname === this.checkAuthPath) {
+          return [requestUrl, requestConfig];
+        }
         const result = await browser.storage.sync.get([
           useSelfHostedStorageKey,
           selfHostedCodecovURLStorageKey,
@@ -23,21 +28,27 @@ export class Codecov {
           selfHostedCodecovApiToken,
         ]);
         const useSelfHosted = result[useSelfHostedStorageKey] || false;
-        // self hosted not selected, not applicable, or is being updated
-        if (!useSelfHosted || config?.headers?.Referrer === "github.com" || config?.headers?.Authorization) {
-          return [url, config];
+        // self hosted not selected
+        if (!useSelfHosted) {
+          return [requestUrl, requestConfig];
+        }
+        const currentURL = new URL(requestConfig?.headers?.Referrer);
+        const selfHostedGitHubURL = new URL(result[selfHostedGitHubURLStorageKey]);
+        // not on self hosted github
+        if (currentURL.hostname !== selfHostedGitHubURL.hostname) {
+          return [requestUrl, requestConfig];
         }
         const codecovUrl = result[selfHostedCodecovURLStorageKey];
         const codecovApiToken = result[selfHostedCodecovApiToken];
         // update url
-        const updatedURL = urlJoin(codecovUrl, url.replace(this.baseUrl, ""));
+        const updatedRequestUrl = urlJoin(codecovUrl, requestUrl.replace(this.baseUrl, ""));
         // update auth header
-        const updatedConfig = _.merge(config, {
+        const updatedRequestConfig = _.merge(requestConfig, {
           headers: {
             Authorization: `bearer ${codecovApiToken}`,
           },
         });
-        return [updatedURL, updatedConfig];
+        return [updatedRequestUrl, updatedRequestConfig];
       },
     });
   }
@@ -45,7 +56,7 @@ export class Codecov {
   static async checkAuth(payload: any): Promise<boolean> {
     const { baseUrl, token } = payload;
 
-    const url = urlJoin(baseUrl, "/api/v2/github/codecov");
+    const url = urlJoin(baseUrl, this.checkAuthPath);
 
     const response = await fetch(url, {
       headers: {

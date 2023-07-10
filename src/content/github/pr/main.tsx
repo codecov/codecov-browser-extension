@@ -84,7 +84,7 @@ async function getPRComparison(url: any) {
   const response = await browser.runtime.sendMessage({
     type: MessageType.FETCH_PR_COMPARISON,
     payload: payload,
-    referrer: window.location.hostname
+    referrer: window.location.href,
   });
 
   return response.data;
