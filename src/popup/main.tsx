@@ -2,6 +2,7 @@ import React, { ChangeEvent, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import browser from "webextension-polyfill";
 import clsx from 'clsx';
+import urlJoin from "url-join"
 
 import "./styles.css";
 import {
@@ -22,6 +23,7 @@ const Popup = () => {
   // ephemeral state
   const [isUrlError, setIsUrlError] = useState(false);
   const [isTokenError, setIsTokenError] = useState(false);
+  const [isTabError, setIsTabError] = useState(false);
   const [isDone, setIsDone] = useState(false);
 
   useEffect(() => {
@@ -51,6 +53,7 @@ const Popup = () => {
   const resetEphemeralState = () => {
     setIsUrlError(false);
     setIsTokenError(false);
+    setIsTabError(false);
     setIsDone(false);
   }
 
@@ -60,6 +63,17 @@ const Popup = () => {
       resetEphemeralState();
       setter(e.target.value);
     };
+
+  const requestContentScriptPermission = async (url: string) => {
+    const payload = {
+      url,
+    }
+
+    return browser.runtime.sendMessage({
+      type: MessageType.REGISTER_CONTENT_SCRIPTS,
+      payload,
+    })
+  }
 
   const handleSave = async () => {
 
@@ -81,6 +95,12 @@ const Popup = () => {
         }
       } catch (error) {
         setIsUrlError(true);
+        return;
+      }
+
+      const isScriptRegistered = await requestContentScriptPermission(githubUrl);
+      if (!isScriptRegistered) {
+        setIsTabError(true);
         return;
       }
     }
@@ -113,7 +133,7 @@ const Popup = () => {
         >
           Codecov
         </a>
-        <button className="btn btn-ghost text-white" onClick={handleSave} disabled={isDone}>
+        <button className="btn btn-ghost text-white" onClick={handleSave} disabled={isDone || (useSelfHosted && !(codecovUrl && codecovApiToken && githubUrl))}>
           {isDone ? "Done" : "Save"}
         </button>
         {/*<div className="pr-4">*/}
@@ -142,7 +162,7 @@ const Popup = () => {
                 <input
                   type="text"
                   placeholder="https://codecov.example.com"
-                  className={clsx("input input-bordered w-full", isUrlError && "border-2 border-red-500")}
+                  className={clsx("input input-bordered w-full", (isUrlError || isTokenError) && "border-2 border-red-500")}
                   value={codecovUrl}
                   onChange={handleTextChange(setCodecovUrl)}
                 />
@@ -176,10 +196,15 @@ const Popup = () => {
                 <input
                   type="text"
                   placeholder="https://github.example.com"
-                  className="input input-bordered w-full"
+                  className={clsx("input input-bordered w-full", isTabError && "border-2 border-red-500")}
                   value={githubUrl}
                   onChange={handleTextChange(setGitHubUrl)}
                 />
+                {isTabError && (
+                  <label className="label">
+                    <span className="label-text-alt text-red-500">This URL must be loaded in the active tab</span>
+                  </label>
+                )}
               </div>
             </div>
           )}
