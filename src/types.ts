@@ -27,5 +27,5 @@ export enum MessageType {
   FETCH_FLAGS_LIST = "fetch_flags_list",
   FETCH_COMPONENTS_LIST = "fetch_components_list",
   REGISTER_CONTENT_SCRIPTS = "register_content_scripts",
-  UNREGISTER_CONTENT_SCRIPTS = "unregister_content_scripts"
+  UNREGISTER_CONTENT_SCRIPTS = "unregister_content_scripts",
 }

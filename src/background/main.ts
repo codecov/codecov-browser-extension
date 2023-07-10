@@ -2,12 +2,14 @@ import browser from "webextension-polyfill";
 
 import { MessageType } from "src/types";
 import { Codecov } from "src/service";
-import { registerContentScript, unregisterContentScript } from "./dynamic_content_scripts";
+import {
+  registerContentScript,
+  unregisterContentScript,
+} from "./dynamic_content_scripts";
 
 async function main(): Promise<void> {
   browser.runtime.onMessage.addListener(handleMessages);
 }
-
 
 async function handleMessages(message: { type: MessageType; payload: any }) {
   switch (message.type) {
