@@ -23,8 +23,8 @@ export class Codecov {
           selfHostedCodecovApiToken,
         ]);
         const useSelfHosted = result[useSelfHostedStorageKey] || false;
-        // self hosted not active, or is being updated
-        if (!useSelfHosted || config?.headers?.Authorization) {
+        // self hosted not selected, not applicable, or is being updated
+        if (!useSelfHosted || config?.headers?.Referrer === "github.com" || config?.headers?.Authorization) {
           return [url, config];
         }
         const codecovUrl = result[selfHostedCodecovURLStorageKey];
@@ -56,7 +56,7 @@ export class Codecov {
     return response.ok;
   }
 
-  static async fetchCommitReport(payload: any): Promise<any> {
+  static async fetchCommitReport(payload: any, referrer: string): Promise<any> {
     const { service, owner, repo, sha, branch, path, flag, component_id } =
       payload;
 
@@ -74,7 +74,11 @@ export class Codecov {
       )
     ).toString();
 
-    const response = await fetch(url.toString());
+    const response = await fetch(url.toString(), {
+      headers: {
+        Referrer: referrer
+      }
+    });
     const data = await response.json();
 
     return {
@@ -83,7 +87,7 @@ export class Codecov {
     };
   }
 
-  static async fetchPRComparison(payload: any): Promise<any> {
+  static async fetchPRComparison(payload: any, referrer: string): Promise<any> {
     const { service, owner, repo, pullid } = payload;
 
     const url = new URL(
@@ -93,7 +97,11 @@ export class Codecov {
     const params = { pullid };
     url.search = new URLSearchParams(params).toString();
 
-    const response = await fetch(url.toString());
+    const response = await fetch(url.toString(), {
+      headers: {
+        Referrer: referrer
+      }
+    });
     const data = await response.json();
 
     return {
@@ -102,7 +110,7 @@ export class Codecov {
     };
   }
 
-  static async listFlags(payload: any): Promise<any> {
+  static async listFlags(payload: any, referrer: string): Promise<any> {
     const { service, owner, repo } = payload;
 
     const url = new URL(
@@ -110,7 +118,11 @@ export class Codecov {
       this.baseUrl
     );
 
-    const response = await fetch(url.toString());
+    const response = await fetch(url.toString(), {
+      headers: {
+        Referrer: referrer
+      }
+    });
     const data = await response.json();
 
     return {
@@ -119,7 +131,7 @@ export class Codecov {
     };
   }
 
-  static async listComponents(payload: any): Promise<any> {
+  static async listComponents(payload: any, referrer: string): Promise<any> {
     const { service, owner, repo } = payload;
 
     const url = new URL(
@@ -127,7 +139,11 @@ export class Codecov {
       this.baseUrl
     );
 
-    const response = await fetch(url.toString());
+    const response = await fetch(url.toString(), {
+      headers: {
+        Referrer: referrer
+      }
+    });
     const data = await response.json();
 
     return {
