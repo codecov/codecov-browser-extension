@@ -84,7 +84,7 @@ async function execute(): Promise<void> {
 
   const selectedFlags: string[] = await browser.storage.local
     .get(flagsStorageKey)
-    .then((result) => result.selected_flags || []);
+    .then((result) => result[flagsStorageKey] || []);
   if (
     selectedFlags.length > 0 &&
     _.intersection(flags, selectedFlags).length === 0
@@ -94,7 +94,7 @@ async function execute(): Promise<void> {
 
   const selectedComponents: string[] = await browser.storage.local
     .get(componentsStorageKey)
-    .then((result) => result.selected_components || []);
+    .then((result) => result[componentsStorageKey] || []);
   if (
     selectedComponents.length > 0 &&
     _.intersection(components, selectedComponents).length === 0
@@ -188,23 +188,23 @@ function createCoverageButton() {
   return codecovButton;
 }
 
-async function handleFlagClick(selected_flags: string[]) {
+async function handleFlagClick(selectedFlags: string[]) {
   await chrome.storage.local.set({
-    selected_components: [],
+    [componentsStorageKey]: [],
   });
   await chrome.storage.local.set({
-    selected_flags,
+    [flagsStorageKey]: selectedFlags,
   });
   clear();
   await execute();
 }
 
-async function handleComponentClick(selected_components: string[]) {
+async function handleComponentClick(selectedComponents: string[]) {
   await chrome.storage.local.set({
-    selected_flags: [],
+    [flagsStorageKey]: [],
   });
   await chrome.storage.local.set({
-    selected_components,
+    [componentsStorageKey]: selectedComponents,
   });
   clear();
   await execute();
