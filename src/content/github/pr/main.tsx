@@ -13,6 +13,7 @@ import {
 import { lineSelector } from "./constants";
 import { colors } from "../common/constants";
 import { print } from "src/utils";
+import { getPRReport } from "../common/fetchers";
 
 const globals: {
   coverageReport?: PullCoverageReport;
@@ -33,7 +34,7 @@ async function execute() {
 
   createContainer();
 
-  const coverageReport = await getPRComparison(urlMetadata);
+  const coverageReport = await getPRReport(urlMetadata);
   if (!coverageReport.files) {
     showError();
     return;
@@ -70,23 +71,6 @@ function getMetadataFromURL(): { [key: string]: string } | null {
     return null;
   }
   return groups;
-}
-
-async function getPRComparison(url: any) {
-  const payload = {
-    service: "github",
-    owner: url.owner,
-    repo: url.repo,
-    pullid: url.id,
-  };
-
-  const response = await browser.runtime.sendMessage({
-    type: MessageType.FETCH_PR_COMPARISON,
-    payload: payload,
-    referrer: window.location.href,
-  });
-
-  return response.data;
 }
 
 const handleToggleClick: React.MouseEventHandler = (event) => {

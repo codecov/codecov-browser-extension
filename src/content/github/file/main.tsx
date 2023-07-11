@@ -20,7 +20,7 @@ import {
 } from "../common/animation";
 import { colors } from "../common/constants";
 import { createDropdown } from "./utils/dropdown";
-import { getComponents, getCoverageReport, getFlags } from "./utils/fetchers";
+import { getComponents, getCommitReport, getFlags } from "../common/fetchers";
 import { print } from "src/utils";
 
 const globals: {
@@ -114,13 +114,13 @@ async function execute(): Promise<void> {
     if (selectedFlags.length > 0) {
       coverageReports = await Promise.all(
         selectedFlags.map((flag) =>
-          getCoverageReport(urlMetadata, flag, undefined)
+          getCommitReport(urlMetadata, flag, undefined)
         )
       );
     } else {
       coverageReports = await Promise.all(
         selectedComponents.map((component) =>
-          getCoverageReport(urlMetadata, undefined, component)
+          getCommitReport(urlMetadata, undefined, component)
         )
       );
     }
@@ -155,7 +155,7 @@ async function execute(): Promise<void> {
       globals.coverageReport = {};
     }
   } else {
-    coverageReport = await getCoverageReport(urlMetadata, undefined, undefined);
+    coverageReport = await getCommitReport(urlMetadata, undefined, undefined);
     if (coverageReport.files?.length) {
       const fileReport = coverageReport.files[0];
       updateButton(`Coverage: ${fileReport.totals.coverage}%`);

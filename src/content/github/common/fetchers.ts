@@ -41,7 +41,7 @@ export async function getComponents(url: {
   return components.map((c: any) => c.component_id);
 }
 
-export async function getCoverageReport(
+export async function getCommitReport(
   url: { [key: string]: string },
   flag: string | undefined,
   component_id: string | undefined
@@ -79,4 +79,21 @@ export async function getCoverageReport(
   });
 
   return branchResponse.data;
+}
+
+export async function getPRReport(url: any) {
+  const payload = {
+    service: "github",
+    owner: url.owner,
+    repo: url.repo,
+    pullid: url.id,
+  };
+
+  const response = await browser.runtime.sendMessage({
+    type: MessageType.FETCH_PR_COMPARISON,
+    payload: payload,
+    referrer: window.location.href,
+  });
+
+  return response.data;
 }
