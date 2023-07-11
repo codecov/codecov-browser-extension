@@ -13,7 +13,6 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: |
-          apt update && apt install -y jq
           jq --arg version "$VERSION" '.version=$version' dist/manifest.json > manifest.tmp.json \
             && mv manifest.tmp.json dist/manifest.json
           jq --arg version "$VERSION" '.version=$version' dist/manifest.firefox.json > manifest.tmp.json \
