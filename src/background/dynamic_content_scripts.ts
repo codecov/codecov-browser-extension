@@ -14,7 +14,7 @@ export async function registerContentScript(payload: any): Promise<boolean> {
 
   await unregisterContentScriptIfExists(payload);
 
-  const urlMatch = urlJoin(url, "/*")
+  const urlMatch = urlJoin(url, "/*");
 
   await browser.scripting.registerContentScripts([
     {
@@ -27,7 +27,9 @@ export async function registerContentScript(payload: any): Promise<boolean> {
   return true;
 }
 
-export async function unregisterContentScriptIfExists(payload: any): Promise<boolean> {
+export async function unregisterContentScriptIfExists(
+  payload: any
+): Promise<boolean> {
   const registrations = await browser.scripting.getRegisteredContentScripts({
     ids: [dynamicContentScriptRegistrationId],
   });

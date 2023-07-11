@@ -27,7 +27,7 @@ async function main() {
 async function execute() {
   const urlMetadata = getMetadataFromURL();
   if (!urlMetadata) {
-    print("PR not detected at current URL")
+    print("PR not detected at current URL");
     return;
   }
 
@@ -63,8 +63,7 @@ function createContainer() {
 }
 
 function getMetadataFromURL(): { [key: string]: string } | null {
-  const regexp =
-    /\/(?<owner>.+?)\/(?<repo>.+?)\/pull\/(?<id>\d+?)\/files/;
+  const regexp = /\/(?<owner>.+?)\/(?<repo>.+?)\/pull\/(?<id>\d+?)\/files/;
   const matches = regexp.exec(window.location.pathname);
   const groups = matches?.groups;
   if (!groups) {

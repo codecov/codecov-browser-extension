@@ -33,7 +33,9 @@ export class Codecov {
           return [requestUrl, requestConfig];
         }
         const currentURL = new URL(requestConfig?.headers?.Referrer);
-        const selfHostedGitHubURL = new URL(result[selfHostedGitHubURLStorageKey]);
+        const selfHostedGitHubURL = new URL(
+          result[selfHostedGitHubURLStorageKey]
+        );
         // not on self hosted github
         if (currentURL.hostname !== selfHostedGitHubURL.hostname) {
           return [requestUrl, requestConfig];
@@ -41,7 +43,10 @@ export class Codecov {
         const codecovUrl = result[selfHostedCodecovURLStorageKey];
         const codecovApiToken = result[selfHostedCodecovApiToken];
         // update url
-        const updatedRequestUrl = urlJoin(codecovUrl, requestUrl.replace(this.baseUrl, ""));
+        const updatedRequestUrl = urlJoin(
+          codecovUrl,
+          requestUrl.replace(this.baseUrl, "")
+        );
         // update auth header
         const updatedRequestConfig = _.merge(requestConfig, {
           headers: {
@@ -87,8 +92,8 @@ export class Codecov {
 
     const response = await fetch(url.toString(), {
       headers: {
-        Referrer: referrer
-      }
+        Referrer: referrer,
+      },
     });
     const data = await response.json();
 
@@ -110,8 +115,8 @@ export class Codecov {
 
     const response = await fetch(url.toString(), {
       headers: {
-        Referrer: referrer
-      }
+        Referrer: referrer,
+      },
     });
     const data = await response.json();
 
@@ -131,8 +136,8 @@ export class Codecov {
 
     const response = await fetch(url.toString(), {
       headers: {
-        Referrer: referrer
-      }
+        Referrer: referrer,
+      },
     });
     const data = await response.json();
 
@@ -152,8 +157,8 @@ export class Codecov {
 
     const response = await fetch(url.toString(), {
       headers: {
-        Referrer: referrer
-      }
+        Referrer: referrer,
+      },
     });
     const data = await response.json();
 

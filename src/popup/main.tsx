@@ -27,8 +27,10 @@ const Popup = () => {
   const [isUnregisterTabError, setIsUnregisterTabError] = useState(false);
   const [isDone, setIsDone] = useState(false);
 
-  const isFormInvalid = useSelfHosted && !(codecovUrl && codecovApiToken && githubUrl)
-  const isError = isUrlError || isTokenError || isTabError || isUnregisterTabError;
+  const isFormInvalid =
+    useSelfHosted && !(codecovUrl && codecovApiToken && githubUrl);
+  const isError =
+    isUrlError || isTokenError || isTabError || isUnregisterTabError;
 
   useEffect(() => {
     loadPersistedState();
@@ -160,8 +162,9 @@ const Popup = () => {
           className={clsx(
             "btn btn-ghost text-white",
             // custom disabled state for styling
-            (isDone || isFormInvalid || isError) && "cursor-not-allowed text-opacity-50")
-          }
+            (isDone || isFormInvalid || isError) &&
+              "cursor-not-allowed text-opacity-50"
+          )}
         >
           {isDone ? "Done" : isError ? "Error" : "Save"}
         </button>
@@ -177,9 +180,7 @@ const Popup = () => {
             </span>
             <input
               type="checkbox"
-              className={clsx(
-                "toggle toggle-primary"
-              )}
+              className={clsx("toggle toggle-primary")}
               checked={useSelfHosted}
               onChange={handleSelfHostedClick}
             />

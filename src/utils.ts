@@ -8,5 +8,5 @@ export function displayChange(number: number) {
 }
 
 export function print(s: string) {
-  console.log(`☂️ codecov: ${s}`)
+  console.log(`☂️ codecov: ${s}`);
 }

@@ -35,7 +35,7 @@ const globals: {
 async function execute(): Promise<void> {
   const urlMetadata = getMetadataFromURL();
   if (!urlMetadata) {
-    print("file not detected at current URL")
+    print("file not detected at current URL");
     return;
   }
 

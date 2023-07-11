@@ -11,7 +11,11 @@ async function main(): Promise<void> {
   browser.runtime.onMessage.addListener(handleMessages);
 }
 
-async function handleMessages(message: { type: MessageType; payload: any, referrer?: string }) {
+async function handleMessages(message: {
+  type: MessageType;
+  payload: any;
+  referrer?: string;
+}) {
   switch (message.type) {
     case MessageType.FETCH_COMMIT_REPORT:
       return Codecov.fetchCommitReport(message.payload, message.referrer!);
