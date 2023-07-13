@@ -29,6 +29,8 @@
 
   "host_permissions": ["https://api.codecov.io/*"],
 
+  "optional_permissions": ["<all_urls>"],
+
   "browser_specific_settings": {
     "gecko": {
       "id": "{f3924b0d-e29f-4593-b605-084b3d71ed9d}"

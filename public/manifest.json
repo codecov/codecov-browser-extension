@@ -27,5 +27,7 @@
 
   "permissions": ["storage", "scripting", "activeTab"],
 
-  "host_permissions": ["https://api.codecov.io/*"]
+  "host_permissions": ["https://api.codecov.io/*"],
+
+  "optional_host_permissions": ["<all_urls>"]
 }
