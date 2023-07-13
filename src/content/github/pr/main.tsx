@@ -12,6 +12,8 @@ import {
 } from "../common/animation";
 import { lineSelector } from "./constants";
 import { colors } from "../common/constants";
+import { print } from "src/utils";
+import { getPRReport } from "../common/fetchers";
 
 const globals: {
   coverageReport?: PullCoverageReport;
@@ -26,12 +28,13 @@ async function main() {
 async function execute() {
   const urlMetadata = getMetadataFromURL();
   if (!urlMetadata) {
+    print("PR not detected at current URL");
     return;
   }
 
   createContainer();
 
-  const coverageReport = await getPRComparison(urlMetadata);
+  const coverageReport = await getPRReport(urlMetadata);
   if (!coverageReport.files) {
     showError();
     return;
@@ -61,30 +64,13 @@ function createContainer() {
 }
 
 function getMetadataFromURL(): { [key: string]: string } | null {
-  const regexp =
-    /github.com\/(?<owner>.+?)\/(?<repo>.+?)\/pull\/(?<id>\d+?)\/files/;
-  const matches = regexp.exec(document.URL);
+  const regexp = /\/(?<owner>.+?)\/(?<repo>.+?)\/pull\/(?<id>\d+?)\/files/;
+  const matches = regexp.exec(window.location.pathname);
   const groups = matches?.groups;
   if (!groups) {
     return null;
   }
   return groups;
-}
-
-async function getPRComparison(url: any) {
-  const payload = {
-    service: "github",
-    owner: url.owner,
-    repo: url.repo,
-    pullid: url.id,
-  };
-
-  const response = await browser.runtime.sendMessage({
-    type: MessageType.FETCH_PR_COMPARISON,
-    payload: payload,
-  });
-
-  return response.data;
 }
 
 const handleToggleClick: React.MouseEventHandler = (event) => {

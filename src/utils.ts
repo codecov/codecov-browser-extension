@@ -6,3 +6,7 @@ export function displayChange(number: number) {
     return `+${fixed}`;
   }
 }
+
+export function print(s: string) {
+  console.log(`☂️ codecov: ${s}`);
+}

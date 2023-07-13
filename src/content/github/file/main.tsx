@@ -20,7 +20,8 @@ import {
 } from "../common/animation";
 import { colors } from "../common/constants";
 import { createDropdown } from "./utils/dropdown";
-import { getComponents, getCoverageReport, getFlags } from "./utils/fetchers";
+import { getComponents, getCommitReport, getFlags } from "../common/fetchers";
+import { print } from "src/utils";
 
 const globals: {
   coverageReport?: FileCoverageReport;
@@ -34,19 +35,33 @@ const globals: {
 async function execute(): Promise<void> {
   const urlMetadata = getMetadataFromURL();
   if (!urlMetadata) {
+    print("file not detected at current URL");
     return;
   }
 
   globals.coverageButton = createCoverageButton();
 
   const flags = await getFlags(urlMetadata);
+
+  const selectedFlags: string[] = await browser.storage.local
+    .get(flagsStorageKey)
+    .then((result) => result[flagsStorageKey] || []);
+
+  // TODO: allow setting selected flags for different files at the same time
+  if (
+    selectedFlags.length > 0 &&
+    _.intersection(flags, selectedFlags).length === 0
+  ) {
+    await handleFlagClick([]);
+  }
+
   if (flags.length > 0) {
     const { button: flagsButton, list: flagsList } = await createDropdown({
       title: "Flags",
       tooltip: "Filter coverage by flag",
       options: flags,
       previousElement: globals.coverageButton,
-      storageKey: flagsStorageKey,
+      selectedOptions: selectedFlags,
       onClick: handleFlagClick,
     });
     globals.flagsButton = flagsButton;
@@ -60,6 +75,19 @@ async function execute(): Promise<void> {
   }
 
   const components = await getComponents(urlMetadata);
+
+  const selectedComponents: string[] = await browser.storage.local
+    .get(componentsStorageKey)
+    .then((result) => result[componentsStorageKey] || []);
+
+  // TODO: allow setting selected flags for different files at the same time
+  if (
+    selectedComponents.length > 0 &&
+    _.intersection(components, selectedComponents).length === 0
+  ) {
+    await handleComponentClick([]);
+  }
+
   if (components.length > 0) {
     const { button: componentsButton, list: componentsList } =
       await createDropdown({
@@ -68,7 +96,7 @@ async function execute(): Promise<void> {
         tooltip: "Filter coverage by component",
         previousElement: globals.coverageButton,
         onClick: handleComponentClick,
-        storageKey: componentsStorageKey,
+        selectedOptions: selectedComponents,
       });
     globals.componentsButton = componentsButton;
     globals.componentsDrop = new Drop({
@@ -80,41 +108,19 @@ async function execute(): Promise<void> {
     });
   }
 
-  // TODO: allow setting selected flags / components for different files at the same time
-
-  const selectedFlags: string[] = await browser.storage.local
-    .get(flagsStorageKey)
-    .then((result) => result.selected_flags || []);
-  if (
-    selectedFlags.length > 0 &&
-    _.intersection(flags, selectedFlags).length === 0
-  ) {
-    await handleFlagClick([]);
-  }
-
-  const selectedComponents: string[] = await browser.storage.local
-    .get(componentsStorageKey)
-    .then((result) => result.selected_components || []);
-  if (
-    selectedComponents.length > 0 &&
-    _.intersection(components, selectedComponents).length === 0
-  ) {
-    await handleComponentClick([]);
-  }
-
   let coverageReport: any;
   if (selectedFlags?.length > 0 || selectedComponents?.length > 0) {
     let coverageReports = [];
     if (selectedFlags.length > 0) {
       coverageReports = await Promise.all(
         selectedFlags.map((flag) =>
-          getCoverageReport(urlMetadata, flag, undefined)
+          getCommitReport(urlMetadata, flag, undefined)
         )
       );
     } else {
       coverageReports = await Promise.all(
         selectedComponents.map((component) =>
-          getCoverageReport(urlMetadata, undefined, component)
+          getCommitReport(urlMetadata, undefined, component)
         )
       );
     }
@@ -149,7 +155,7 @@ async function execute(): Promise<void> {
       globals.coverageReport = {};
     }
   } else {
-    coverageReport = await getCoverageReport(urlMetadata, undefined, undefined);
+    coverageReport = await getCommitReport(urlMetadata, undefined, undefined);
     if (coverageReport.files?.length) {
       const fileReport = coverageReport.files[0];
       updateButton(`Coverage: ${fileReport.totals.coverage}%`);
@@ -188,23 +194,23 @@ function createCoverageButton() {
   return codecovButton;
 }
 
-async function handleFlagClick(selected_flags: string[]) {
+async function handleFlagClick(selectedFlags: string[]) {
   await chrome.storage.local.set({
-    selected_components: [],
+    [componentsStorageKey]: [],
   });
   await chrome.storage.local.set({
-    selected_flags,
+    [flagsStorageKey]: selectedFlags,
   });
   clear();
   await execute();
 }
 
-async function handleComponentClick(selected_components: string[]) {
+async function handleComponentClick(selectedComponents: string[]) {
   await chrome.storage.local.set({
-    selected_flags: [],
+    [flagsStorageKey]: [],
   });
   await chrome.storage.local.set({
-    selected_components,
+    [componentsStorageKey]: selectedComponents,
   });
   clear();
   await execute();
@@ -221,8 +227,8 @@ function calculateCoveragePct(): number {
 
 function getMetadataFromURL(): { [key: string]: string } | null {
   const regexp =
-    /github.com\/(?<owner>.+?)\/(?<repo>.+?)\/blob\/(?<ref>.+?)\/(?<path>.+)/;
-  const matches = regexp.exec(document.URL);
+    /\/(?<owner>.+?)\/(?<repo>.+?)\/blob\/(?<ref>.+?)\/(?<path>.+)/;
+  const matches = regexp.exec(window.location.pathname);
   const groups = matches?.groups;
   if (!groups) {
     return null;

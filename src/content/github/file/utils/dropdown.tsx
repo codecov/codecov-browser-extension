@@ -8,14 +8,14 @@ export async function createDropdown({
   options,
   onClick,
   previousElement,
-  storageKey,
+  selectedOptions,
 }: {
   title: string;
   tooltip: string;
   options: string[];
-  onClick: (selected_options: string[]) => void;
+  onClick: (selectedOptions: string[]) => void;
   previousElement: HTMLElement;
-  storageKey: string;
+  selectedOptions: string[];
 }) {
   const editButton = document
     .querySelector('[data-testid="edit-button"]')!
@@ -29,11 +29,7 @@ export async function createDropdown({
   textNode.appendChild(<span>{title}</span>);
   previousElement.insertAdjacentElement("afterend", dropdownButton);
 
-  const selected_options = await browser.storage.local
-    .get(storageKey)
-    .then((result) => result[storageKey] || []);
-
-  const allSelected = _.isEqual(options, selected_options);
+  const allSelected = _.isEqual(options, selectedOptions);
 
   const optionsList = (
     <ul className="codecov-list-reset">
@@ -44,7 +40,7 @@ export async function createDropdown({
         Select {allSelected ? "None" : "All"}
       </li>
       {options.map((option: string) => {
-        const isSelected = selected_options.indexOf(option) > -1;
+        const isSelected = selectedOptions.indexOf(option) > -1;
         return (
           <>
             <hr className="codecov-my1 codecov-mxn2" />
@@ -53,8 +49,8 @@ export async function createDropdown({
               onClick={() =>
                 onClick(
                   isSelected
-                    ? _.without(selected_options, option)
-                    : selected_options.concat(option)
+                    ? _.without(selectedOptions, option)
+                    : selectedOptions.concat(option)
                 )
               }
             >

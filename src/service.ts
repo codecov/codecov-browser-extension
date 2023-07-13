@@ -1,24 +1,84 @@
 import _ from "lodash";
+import fetchIntercept from "fetch-intercept";
+import browser from "webextension-polyfill";
+import urlJoin from "url-join";
+
+import {
+  selfHostedCodecovApiToken,
+  selfHostedCodecovURLStorageKey,
+  selfHostedGitHubURLStorageKey,
+  useSelfHostedStorageKey,
+} from "src/constants";
 
 export class Codecov {
-  static baseUrl = "https://api.codecov.io/api/v2";
+  static baseUrl = "https://api.codecov.io";
+  static checkAuthPath = "/api/v2/github/codecov";
 
-  static async checkAuth(token: string): Promise<boolean> {
-    const url = `${this.baseUrl}/github/codecov`;
+  static _init() {
+    fetchIntercept.register({
+      request: async (requestUrl: string, requestConfig: any) => {
+        // use request params for auth check
+        if (new URL(requestUrl).pathname === this.checkAuthPath) {
+          return [requestUrl, requestConfig];
+        }
+        const result = await browser.storage.sync.get([
+          useSelfHostedStorageKey,
+          selfHostedCodecovURLStorageKey,
+          selfHostedGitHubURLStorageKey,
+          selfHostedCodecovApiToken,
+        ]);
+        const useSelfHosted = result[useSelfHostedStorageKey] || false;
+        // self hosted not selected
+        if (!useSelfHosted) {
+          return [requestUrl, requestConfig];
+        }
+        const currentURL = new URL(requestConfig?.headers?.Referrer);
+        const selfHostedGitHubURL = new URL(
+          result[selfHostedGitHubURLStorageKey]
+        );
+        // not on self hosted github
+        if (currentURL.hostname !== selfHostedGitHubURL.hostname) {
+          return [requestUrl, requestConfig];
+        }
+        const codecovUrl = result[selfHostedCodecovURLStorageKey];
+        const codecovApiToken = result[selfHostedCodecovApiToken];
+        // update url
+        const updatedRequestUrl = urlJoin(
+          codecovUrl,
+          requestUrl.replace(this.baseUrl, "")
+        );
+        // update auth header
+        const updatedRequestConfig = _.merge(requestConfig, {
+          headers: {
+            Authorization: `bearer ${codecovApiToken}`,
+          },
+        });
+        return [updatedRequestUrl, updatedRequestConfig];
+      },
+    });
+  }
+
+  static async checkAuth(payload: any): Promise<boolean> {
+    const { baseUrl, token } = payload;
+
+    const url = urlJoin(baseUrl, this.checkAuthPath);
+
     const response = await fetch(url, {
       headers: {
         Authorization: `bearer ${token}`,
       },
     });
+
     return response.ok;
   }
 
-  static async fetchCommitReport(payload: any): Promise<any> {
+  static async fetchCommitReport(payload: any, referrer: string): Promise<any> {
     const { service, owner, repo, sha, branch, path, flag, component_id } =
       payload;
 
     const url = new URL(
-      `${this.baseUrl}/${service}/${owner}/repos/${repo}/report`
+      `/api/v2/${service}/${owner}/repos/${repo}/report`,
+      this.baseUrl
     );
 
     const params = { path };
@@ -30,7 +90,11 @@ export class Codecov {
       )
     ).toString();
 
-    const response = await fetch(url.toString());
+    const response = await fetch(url.toString(), {
+      headers: {
+        Referrer: referrer,
+      },
+    });
     const data = await response.json();
 
     return {
@@ -39,16 +103,21 @@ export class Codecov {
     };
   }
 
-  static async fetchPRComparison(payload: any): Promise<any> {
+  static async fetchPRComparison(payload: any, referrer: string): Promise<any> {
     const { service, owner, repo, pullid } = payload;
 
     const url = new URL(
-      `${this.baseUrl}/${service}/${owner}/repos/${repo}/compare`
+      `/api/v2/${service}/${owner}/repos/${repo}/compare`,
+      this.baseUrl
     );
-
     const params = { pullid };
     url.search = new URLSearchParams(params).toString();
-    const response = await fetch(url.toString());
+
+    const response = await fetch(url.toString(), {
+      headers: {
+        Referrer: referrer,
+      },
+    });
     const data = await response.json();
 
     return {
@@ -57,14 +126,19 @@ export class Codecov {
     };
   }
 
-  static async listFlags(payload: any): Promise<any> {
+  static async listFlags(payload: any, referrer: string): Promise<any> {
     const { service, owner, repo } = payload;
 
     const url = new URL(
-      `${this.baseUrl}/${service}/${owner}/repos/${repo}/flags`
+      `/api/v2/${service}/${owner}/repos/${repo}/flags`,
+      this.baseUrl
     );
 
-    const response = await fetch(url.toString());
+    const response = await fetch(url.toString(), {
+      headers: {
+        Referrer: referrer,
+      },
+    });
     const data = await response.json();
 
     return {
@@ -73,14 +147,19 @@ export class Codecov {
     };
   }
 
-  static async listComponents(payload: any): Promise<any> {
+  static async listComponents(payload: any, referrer: string): Promise<any> {
     const { service, owner, repo } = payload;
 
     const url = new URL(
-      `${this.baseUrl}/${service}/${owner}/repos/${repo}/components`
+      `/api/v2/${service}/${owner}/repos/${repo}/components`,
+      this.baseUrl
     );
 
-    const response = await fetch(url.toString());
+    const response = await fetch(url.toString(), {
+      headers: {
+        Referrer: referrer,
+      },
+    });
     const data = await response.json();
 
     return {
@@ -89,3 +168,5 @@ export class Codecov {
     };
   }
 }
+
+Codecov._init();

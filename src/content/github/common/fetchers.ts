@@ -13,6 +13,7 @@ export async function getFlags(url: {
   const flagsResponse = await browser.runtime.sendMessage({
     type: MessageType.FETCH_FLAGS_LIST,
     payload,
+    referrer: window.location.href,
   });
 
   const flags = flagsResponse.ok ? flagsResponse.data.results : [];
@@ -32,6 +33,7 @@ export async function getComponents(url: {
   const componentsResponse = await browser.runtime.sendMessage({
     type: MessageType.FETCH_COMPONENTS_LIST,
     payload,
+    referrer: window.location.href,
   });
 
   const components = componentsResponse.ok ? componentsResponse.data : [];
@@ -39,7 +41,7 @@ export async function getComponents(url: {
   return components.map((c: any) => c.component_id);
 }
 
-export async function getCoverageReport(
+export async function getCommitReport(
   url: { [key: string]: string },
   flag: string | undefined,
   component_id: string | undefined
@@ -60,6 +62,7 @@ export async function getCoverageReport(
       ...commonPayload,
       sha: url.ref,
     },
+    referrer: window.location.href,
   });
 
   if (shaResponse.ok) {
@@ -72,7 +75,25 @@ export async function getCoverageReport(
       ...commonPayload,
       branch: url.ref,
     },
+    referrer: window.location.href,
   });
 
   return branchResponse.data;
+}
+
+export async function getPRReport(url: any) {
+  const payload = {
+    service: "github",
+    owner: url.owner,
+    repo: url.repo,
+    pullid: url.id,
+  };
+
+  const response = await browser.runtime.sendMessage({
+    type: MessageType.FETCH_PR_COMPARISON,
+    payload: payload,
+    referrer: window.location.href,
+  });
+
+  return response.data;
 }
