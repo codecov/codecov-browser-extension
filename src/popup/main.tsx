@@ -12,6 +12,8 @@ import {
   useSelfHostedStorageKey,
 } from "src/constants";
 import { MessageType } from "src/types";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSquareCheck } from "@fortawesome/free-solid-svg-icons";
 
 const Popup = () => {
   // persisted state
@@ -21,6 +23,7 @@ const Popup = () => {
   const [codecovApiToken, setCodecovApiToken] = useState("");
 
   // ephemeral state
+  const [isUrlPermissionGranted, setIsUrlPermissionGranted] = useState(false);
   const [isUrlError, setIsUrlError] = useState(false);
   const [isTokenError, setIsTokenError] = useState(false);
   const [isTabError, setIsTabError] = useState(false);
@@ -28,7 +31,8 @@ const Popup = () => {
   const [isDone, setIsDone] = useState(false);
 
   const isFormInvalid =
-    useSelfHosted && !(codecovUrl && codecovApiToken && githubUrl);
+    useSelfHosted &&
+    !(codecovUrl && codecovApiToken && githubUrl && isUrlPermissionGranted);
   const isError =
     isUrlError || isTokenError || isTabError || isUnregisterTabError;
 
@@ -57,6 +61,7 @@ const Popup = () => {
   };
 
   const resetEphemeralState = () => {
+    setIsUrlPermissionGranted(false);
     setIsUrlError(false);
     setIsTokenError(false);
     setIsTabError(false);
@@ -90,6 +95,15 @@ const Popup = () => {
       payload,
     });
   };
+
+  function requestHostPermission() {
+    const urlMatch = urlJoin(codecovUrl, "/*");
+    browser.permissions
+      .request({
+        origins: [urlMatch],
+      })
+      .then(setIsUrlPermissionGranted);
+  }
 
   const handleSave = async () => {
     if (useSelfHosted) {
@@ -159,12 +173,8 @@ const Popup = () => {
         </a>
         <button
           onClick={handleSave}
-          className={clsx(
-            "btn btn-ghost text-white",
-            // custom disabled state for styling
-            (isDone || isFormInvalid || isError) &&
-              "cursor-not-allowed text-opacity-50"
-          )}
+          disabled={isDone || isFormInvalid || isError}
+          className="btn btn-ghost text-white"
         >
           {isDone ? "Done" : isError ? "Error" : "Save"}
         </button>
@@ -198,16 +208,30 @@ const Popup = () => {
                 <label className="label">
                   <span className="label-text">Codecov URL</span>
                 </label>
-                <input
-                  type="text"
-                  placeholder="https://codecov.example.com"
-                  className={clsx(
-                    "input input-bordered w-full",
-                    (isUrlError || isTokenError) && "border-2 border-red-500"
-                  )}
-                  value={codecovUrl}
-                  onChange={handleTextChange(setCodecovUrl)}
-                />
+                <div className="flex space-x-2">
+                  <input
+                    type="text"
+                    placeholder="https://codecov.example.com"
+                    className={clsx(
+                      "input input-bordered w-full",
+                      (isUrlError || isTokenError) && "border-2 border-red-500"
+                    )}
+                    value={codecovUrl}
+                    onChange={handleTextChange(setCodecovUrl)}
+                  />
+                  <button
+                    disabled={isUrlPermissionGranted}
+                    className="btn btn-square btn-ghost"
+                    onClick={requestHostPermission}
+                  >
+                    <FontAwesomeIcon icon={faSquareCheck} size="xl" />
+                  </button>
+                </div>
+                <label className="label">
+                  <span className="label-text-alt">
+                    You must click the checkbox and allow permissions
+                  </span>
+                </label>
                 {isUrlError && (
                   <label className="label">
                     <span className="label-text-alt text-red-500">
