@@ -14,6 +14,11 @@ export async function registerContentScript(payload: any): Promise<boolean> {
 
   await unregisterContentScriptIfExists(payload);
 
+  if (new URL(url).hostname === "github.com") {
+    // content script for github.com already registered in manifest
+    return true;
+  }
+
   const urlMatch = urlJoin(url, "/*");
 
   await browser.scripting.registerContentScripts([

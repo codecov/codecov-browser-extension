@@ -25,9 +25,11 @@
     "scripts": ["js/background.js"]
   },
 
-  "permissions": ["storage"],
+  "permissions": ["storage", "scripting", "activeTab"],
 
   "host_permissions": ["https://api.codecov.io/*"],
+
+  "optional_permissions": ["<all_urls>"],
 
   "browser_specific_settings": {
     "gecko": {
