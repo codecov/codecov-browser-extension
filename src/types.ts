@@ -3,13 +3,19 @@ export type FileMetadata = {
   repo: string;
   path: string;
   commit: string;
-}
+};
 
 export enum CoverageStatus {
   COVERED,
   UNCOVERED,
   PARTIAL,
 }
+
+export type FileCoverageReportResponse = {
+  files?: Array<{
+    line_coverage: Array<[number, CoverageStatus]>;
+  }>;
+};
 
 export type FileCoverageReport = {
   [lineNumber: number]: CoverageStatus;

@@ -1,5 +1,9 @@
 import browser from "webextension-polyfill";
-import { FileMetadata, MessageType } from "src/types";
+import {
+  FileCoverageReportResponse,
+  FileMetadata,
+  MessageType,
+} from "src/types";
 
 export async function getMetadata(url: string): Promise<FileMetadata> {
   const response = await fetch(url).then((response) => response.json());
@@ -51,7 +55,7 @@ export async function getCommitReport(
   metadata: FileMetadata,
   flag: string | undefined,
   component_id: string | undefined
-) {
+): Promise<FileCoverageReportResponse> {
   const payload = {
     service: "github",
     owner: metadata.owner,

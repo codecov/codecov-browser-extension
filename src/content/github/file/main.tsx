@@ -10,6 +10,7 @@ import "./style.css";
 import {
   CoverageStatus,
   FileCoverageReport,
+  FileCoverageReportResponse,
   FileMetadata,
   MessageType,
 } from "src/types";
@@ -121,30 +122,39 @@ async function execute(): Promise<void> {
     });
   }
 
-  let coverageReport: any;
-  if (selectedFlags?.length > 0 || selectedComponents?.length > 0) {
-    let coverageReports = [];
-    if (selectedFlags.length > 0) {
-      coverageReports = await Promise.all(
-        selectedFlags.map((flag) => getCommitReport(metadata, flag, undefined))
-      );
-    } else {
-      coverageReports = await Promise.all(
-        selectedComponents.map((component) =>
-          getCommitReport(metadata, undefined, component)
-        )
-      );
+  let coverageReportResponses: Array<FileCoverageReportResponse>;
+  if (selectedFlags?.length > 0) {
+    coverageReportResponses = await Promise.all(
+      selectedFlags.map((flag) => getCommitReport(metadata, flag, undefined))
+    );
+  } else if (selectedComponents?.length > 0) {
+    coverageReportResponses = await Promise.all(
+      selectedComponents.map((component) =>
+        getCommitReport(metadata, undefined, component)
+      )
+    );
+  } else {
+    coverageReportResponses = await Promise.all([
+      await getCommitReport(metadata, undefined, undefined),
+    ]);
+  }
+
+  const coverageReports = coverageReportResponses.map(
+    (reportResponse): FileCoverageReport => {
+      const file = reportResponse.files?.[0];
+      return Object.fromEntries(file?.line_coverage || []);
     }
-    coverageReport = coverageReports
-      .map((report) => {
-        if (report.files?.length) {
-          return Object.fromEntries(report.files[0].line_coverage);
-        } else {
-          return {};
-        }
-      })
-      .reduce((finalReport, currentReport) => {
-        return _.mergeWith(finalReport, currentReport, (x, y) => {
+  );
+
+  const coverageReport = ((): FileCoverageReport => {
+    if (coverageReports.length === 1) {
+      return coverageReports[0];
+    }
+    return coverageReports.reduce((finalReport, currentReport) => {
+      return _.mergeWith(
+        finalReport,
+        currentReport,
+        (x: CoverageStatus, y: CoverageStatus) => {
           if (x === CoverageStatus.COVERED || y === CoverageStatus.COVERED) {
             return CoverageStatus.COVERED;
           } else if (
@@ -155,28 +165,19 @@ async function execute(): Promise<void> {
           } else {
             return CoverageStatus.UNCOVERED;
           }
-        });
-      }, {});
-    if (!_.isEmpty(coverageReport)) {
-      globals.coverageReport = coverageReport;
-      const coveragePct = calculateCoveragePct();
-      updateButton(`Coverage: ${coveragePct.toFixed(2)}%`);
-    } else {
-      updateButton(`Coverage: N/A`);
-      globals.coverageReport = {};
-    }
+        }
+      );
+    }, {});
+  })();
+
+  if (!_.isEmpty(coverageReport)) {
+    const coveragePct = calculateCoveragePct(coverageReport);
+    updateButton(`Coverage: ${coveragePct.toFixed(2)}%`);
   } else {
-    coverageReport = await getCommitReport(metadata, undefined, undefined);
-    if (coverageReport.files?.length) {
-      const fileReport = coverageReport.files[0];
-      updateButton(`Coverage: ${fileReport.totals.coverage}%`);
-      globals.coverageReport = Object.fromEntries(fileReport.line_coverage);
-    } else {
-      updateButton(`Coverage: N/A`);
-      globals.coverageReport = {};
-    }
+    updateButton(`Coverage: N/A`);
   }
 
+  globals.coverageReport = coverageReport;
   animateAndAnnotateLines(lineSelector, annotateLine);
 }
 
@@ -227,10 +228,10 @@ async function handleComponentClick(selectedComponents: string[]) {
   await execute();
 }
 
-function calculateCoveragePct(): number {
-  const x = Object.entries(globals.coverageReport!);
-  const totalLines = x.length;
-  const coveredLines = x.filter(
+function calculateCoveragePct(coverageReport: FileCoverageReport): number {
+  const report = Object.entries(coverageReport);
+  const totalLines = report.length;
+  const coveredLines = report.filter(
     ([line, status]) => status !== CoverageStatus.UNCOVERED
   ).length;
   return (coveredLines * 100) / totalLines;
