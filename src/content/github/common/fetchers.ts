@@ -22,13 +22,13 @@ export async function getFlags(metadata: FileMetadata): Promise<string[]> {
     repo: metadata.repo,
   };
 
-  const flagsResponse = await browser.runtime.sendMessage({
+  const response = await browser.runtime.sendMessage({
     type: MessageType.FETCH_FLAGS_LIST,
     payload,
     referrer: window.location.href,
   });
 
-  const flags = flagsResponse.ok ? flagsResponse.data.results : [];
+  const flags = response.ok ? response.data.results : [];
 
   return flags.map((f: any) => f.flag_name);
 }
@@ -40,13 +40,13 @@ export async function getComponents(metadata: FileMetadata): Promise<string[]> {
     repo: metadata.repo,
   };
 
-  const componentsResponse = await browser.runtime.sendMessage({
+  const response = await browser.runtime.sendMessage({
     type: MessageType.FETCH_COMPONENTS_LIST,
     payload,
     referrer: window.location.href,
   });
 
-  const components = componentsResponse.ok ? componentsResponse.data : [];
+  const components = response.ok ? response.data : [];
 
   return components.map((c: any) => c.component_id);
 }

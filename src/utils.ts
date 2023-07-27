@@ -7,6 +7,9 @@ export function displayChange(number: number) {
   }
 }
 
-export function print(s: string) {
+export function print(s: string, err?: Error | undefined) {
   console.log(`☂️ codecov: ${s}`);
+  if (err) {
+    console.trace(err);
+  }
 }

@@ -43,7 +43,21 @@ const globals: {
   componentsDrop?: Drop;
 } = {};
 
-async function execute(): Promise<void> {
+init().catch((e) => print("unexpected error", e));
+
+function init(): Promise<void> {
+  // this event discovered by "reverse-engineering GitHub"
+  // https://github.com/refined-github/refined-github/blob/main/contributing.md#reverse-engineering-github
+  // TODO: this event is not fired when navigating using the browser's back and forward buttons
+  document.addEventListener("soft-nav:end", () => {
+    clear();
+    main();
+  });
+
+  return main();
+}
+
+async function main(): Promise<void> {
   let metadata: FileMetadata;
 
   try {
@@ -55,11 +69,25 @@ async function execute(): Promise<void> {
 
   globals.coverageButton = createCoverageButton();
 
-  const flags = await getFlags(metadata);
+  process(metadata).catch((e) => {
+    print("unexpected error", e);
+    updateButton("Coverage: ⚠");
+  });
+}
+
+async function process(metadata: FileMetadata): Promise<void> {
+  const flags = await getFlags(metadata).catch((e) => {
+    print("error while fetching flags", e);
+    return [];
+  });
 
   const selectedFlags: string[] = await browser.storage.local
     .get(flagsStorageKey)
-    .then((result) => result[flagsStorageKey] || []);
+    .then((result) => result[flagsStorageKey] || [])
+    .catch((e) => {
+      print("error while fetching selected flags", e);
+      return [];
+    });
 
   // TODO: allow setting selected flags for different files at the same time
   if (
@@ -67,32 +95,42 @@ async function execute(): Promise<void> {
     _.intersection(flags, selectedFlags).length === 0
   ) {
     await handleFlagClick([]);
+    return;
   }
 
   if (flags.length > 0) {
-    const { button: flagsButton, list: flagsList } = await createDropdown({
+    createDropdown({
       title: "Flags",
       tooltip: "Filter coverage by flag",
       options: flags,
-      previousElement: globals.coverageButton,
+      previousElement: globals.coverageButton!,
       selectedOptions: selectedFlags,
       onClick: handleFlagClick,
-    });
-    globals.flagsButton = flagsButton;
-    globals.flagsDrop = new Drop({
-      target: globals.flagsButton,
-      content: flagsList,
-      classes: "drop-theme-arrows codecov-z1 codecov-bg-white",
-      position: "bottom right",
-      openOn: "click",
-    });
+    })
+      .then(({ button, list }) => {
+        globals.flagsButton = button;
+        globals.flagsDrop = new Drop({
+          target: button,
+          content: list,
+          classes: "drop-theme-arrows codecov-z1 codecov-bg-white",
+          position: "bottom right",
+          openOn: "click",
+        });
+      })
+      .catch((e) => {
+        print("error while rendering flags dropdown", e);
+      });
   }
 
   const components = await getComponents(metadata);
 
   const selectedComponents: string[] = await browser.storage.local
     .get(componentsStorageKey)
-    .then((result) => result[componentsStorageKey] || []);
+    .then((result) => result[componentsStorageKey] || [])
+    .catch((e) => {
+      print("error while fetching selected components", e);
+      return [];
+    });
 
   // TODO: allow setting selected flags for different files at the same time
   if (
@@ -100,43 +138,54 @@ async function execute(): Promise<void> {
     _.intersection(components, selectedComponents).length === 0
   ) {
     await handleComponentClick([]);
+    return;
   }
 
   if (components.length > 0) {
-    const { button: componentsButton, list: componentsList } =
-      await createDropdown({
-        title: "Components",
-        options: components,
-        tooltip: "Filter coverage by component",
-        previousElement: globals.coverageButton,
-        onClick: handleComponentClick,
-        selectedOptions: selectedComponents,
+    createDropdown({
+      title: "Components",
+      options: components,
+      tooltip: "Filter coverage by component",
+      previousElement: globals.coverageButton!,
+      onClick: handleComponentClick,
+      selectedOptions: selectedComponents,
+    })
+      .then(({ button, list }) => {
+        globals.componentsButton = button;
+        globals.componentsDrop = new Drop({
+          target: button,
+          content: list,
+          classes: "drop-theme-arrows codecov-z1 codecov-bg-white",
+          position: "bottom right",
+          openOn: "click",
+        });
+      })
+      .catch((e) => {
+        print("error while rendering components dropdown", e);
       });
-    globals.componentsButton = componentsButton;
-    globals.componentsDrop = new Drop({
-      target: globals.componentsButton,
-      content: componentsList,
-      classes: "drop-theme-arrows codecov-z1 codecov-bg-white",
-      position: "bottom right",
-      openOn: "click",
-    });
   }
 
   let coverageReportResponses: Array<FileCoverageReportResponse>;
-  if (selectedFlags?.length > 0) {
-    coverageReportResponses = await Promise.all(
-      selectedFlags.map((flag) => getCommitReport(metadata, flag, undefined))
-    );
-  } else if (selectedComponents?.length > 0) {
-    coverageReportResponses = await Promise.all(
-      selectedComponents.map((component) =>
-        getCommitReport(metadata, undefined, component)
-      )
-    );
-  } else {
-    coverageReportResponses = await Promise.all([
-      await getCommitReport(metadata, undefined, undefined),
-    ]);
+  try {
+    if (selectedFlags?.length > 0) {
+      coverageReportResponses = await Promise.all(
+        selectedFlags.map((flag) => getCommitReport(metadata, flag, undefined))
+      );
+    } else if (selectedComponents?.length > 0) {
+      coverageReportResponses = await Promise.all(
+        selectedComponents.map((component) =>
+          getCommitReport(metadata, undefined, component)
+        )
+      );
+    } else {
+      coverageReportResponses = await Promise.all([
+        await getCommitReport(metadata, undefined, undefined),
+      ]);
+    }
+  } catch (e) {
+    print("error while fetching coverage report(s)", e as Error);
+    updateButton(`Coverage: ⚠`);
+    return;
   }
 
   const coverageReports = coverageReportResponses.map(
@@ -170,12 +219,13 @@ async function execute(): Promise<void> {
     }, {});
   })();
 
-  if (!_.isEmpty(coverageReport)) {
-    const coveragePct = calculateCoveragePct(coverageReport);
-    updateButton(`Coverage: ${coveragePct.toFixed(2)}%`);
-  } else {
+  if (_.isEmpty(coverageReport)) {
     updateButton(`Coverage: N/A`);
+    return;
   }
+
+  const coveragePct = calculateCoveragePct(coverageReport);
+  updateButton(`Coverage: ${coveragePct.toFixed(2)}%`);
 
   globals.coverageReport = coverageReport;
   animateAndAnnotateLines(lineSelector, annotateLine);
@@ -214,7 +264,7 @@ async function handleFlagClick(selectedFlags: string[]) {
     [flagsStorageKey]: selectedFlags,
   });
   clear();
-  await execute();
+  await main();
 }
 
 async function handleComponentClick(selectedComponents: string[]) {
@@ -225,7 +275,7 @@ async function handleComponentClick(selectedComponents: string[]) {
     [componentsStorageKey]: selectedComponents,
   });
   clear();
-  await execute();
+  await main();
 }
 
 function calculateCoveragePct(coverageReport: FileCoverageReport): number {
@@ -243,7 +293,11 @@ function updateButton(text: string) {
 
 function annotateLine(line: HTMLElement) {
   const lineNumber = parseInt(line.getAttribute("data-key")!) + 1;
-  const status = globals.coverageReport![lineNumber];
+  // called from "Coverage: N/A" button on-click handler
+  if (!globals.coverageReport) {
+    return;
+  }
+  const status = globals.coverageReport[lineNumber];
   if (status === CoverageStatus.COVERED) {
     line.style.backgroundColor = alpha(colors.green, 0.25);
   } else if (status === CoverageStatus.UNCOVERED) {
@@ -274,16 +328,3 @@ function clear() {
   clearButtons();
   clearAnimationAndAnnotations();
 }
-
-async function main(): Promise<void> {
-  await execute();
-  // this event discovered by "reverse-engineering GitHub"
-  // https://github.com/refined-github/refined-github/blob/main/contributing.md#reverse-engineering-github
-  // TODO: this event is not fired when navigating using the browser's back and forward buttons
-  document.addEventListener("soft-nav:end", () => {
-    clear();
-    execute();
-  });
-}
-
-main();
