@@ -18,12 +18,12 @@ export async function createDropdown({
   selectedOptions: string[];
 }) {
   const editButton = document
-    .querySelector('[data-testid="edit-button"]')!
+    .querySelector('[data-testid="more-edit-button"]')!
     .closest("div")!;
   const dropdownButton = editButton.cloneNode(true) as HTMLElement;
-  const textNode = dropdownButton.querySelector("a")!;
+  const textNode: HTMLElement = dropdownButton.querySelector('[data-component="IconButton"]')!;
   textNode.innerHTML = "";
-  textNode.href = "javascript:void(0)";
+  textNode.ariaDisabled = "false";
   textNode.parentElement!.ariaLabel = tooltip;
   textNode.style.padding = `0 ${title.length * 5}px`;
   textNode.appendChild(<span>{title}</span>);
