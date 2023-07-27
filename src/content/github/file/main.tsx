@@ -282,7 +282,7 @@ function calculateCoveragePct(coverageReport: FileCoverageReport): number {
   const report = Object.entries(coverageReport);
   const totalLines = report.length;
   const coveredLines = report.filter(
-    ([line, status]) => status !== CoverageStatus.UNCOVERED
+    ([line, status]) => status === CoverageStatus.COVERED
   ).length;
   return (coveredLines * 100) / totalLines;
 }
