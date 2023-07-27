@@ -7,7 +7,12 @@ import "tether-drop/dist/css/drop-theme-arrows.css";
 
 import "src/basscss.css";
 import "./style.css";
-import { CoverageStatus, FileCoverageReport, MessageType } from "src/types";
+import {
+  CoverageStatus,
+  FileCoverageReport,
+  FileMetadata,
+  MessageType,
+} from "src/types";
 import {
   componentsStorageKey,
   flagsStorageKey,
@@ -20,7 +25,12 @@ import {
 } from "../common/animation";
 import { colors } from "../common/constants";
 import { createDropdown } from "./utils/dropdown";
-import { getComponents, getCommitReport, getFlags } from "../common/fetchers";
+import {
+  getMetadata,
+  getComponents,
+  getCommitReport,
+  getFlags,
+} from "../common/fetchers";
 import { print } from "src/utils";
 
 const globals: {
@@ -33,15 +43,18 @@ const globals: {
 } = {};
 
 async function execute(): Promise<void> {
-  const urlMetadata = getMetadataFromURL();
-  if (!urlMetadata) {
+  let metadata: FileMetadata;
+
+  try {
+    metadata = await getMetadata(document.URL);
+  } catch (e) {
     print("file not detected at current URL");
     return;
   }
 
   globals.coverageButton = createCoverageButton();
 
-  const flags = await getFlags(urlMetadata);
+  const flags = await getFlags(metadata);
 
   const selectedFlags: string[] = await browser.storage.local
     .get(flagsStorageKey)
@@ -74,7 +87,7 @@ async function execute(): Promise<void> {
     });
   }
 
-  const components = await getComponents(urlMetadata);
+  const components = await getComponents(metadata);
 
   const selectedComponents: string[] = await browser.storage.local
     .get(componentsStorageKey)
@@ -113,14 +126,12 @@ async function execute(): Promise<void> {
     let coverageReports = [];
     if (selectedFlags.length > 0) {
       coverageReports = await Promise.all(
-        selectedFlags.map((flag) =>
-          getCommitReport(urlMetadata, flag, undefined)
-        )
+        selectedFlags.map((flag) => getCommitReport(metadata, flag, undefined))
       );
     } else {
       coverageReports = await Promise.all(
         selectedComponents.map((component) =>
-          getCommitReport(urlMetadata, undefined, component)
+          getCommitReport(metadata, undefined, component)
         )
       );
     }
@@ -155,7 +166,7 @@ async function execute(): Promise<void> {
       globals.coverageReport = {};
     }
   } else {
-    coverageReport = await getCommitReport(urlMetadata, undefined, undefined);
+    coverageReport = await getCommitReport(metadata, undefined, undefined);
     if (coverageReport.files?.length) {
       const fileReport = coverageReport.files[0];
       updateButton(`Coverage: ${fileReport.totals.coverage}%`);
@@ -223,17 +234,6 @@ function calculateCoveragePct(): number {
     ([line, status]) => status !== CoverageStatus.UNCOVERED
   ).length;
   return (coveredLines * 100) / totalLines;
-}
-
-function getMetadataFromURL(): { [key: string]: string } | null {
-  const regexp =
-    /\/(?<owner>.+?)\/(?<repo>.+?)\/blob\/(?<ref>.+?)\/(?<path>.+)/;
-  const matches = regexp.exec(window.location.pathname);
-  const groups = matches?.groups;
-  if (!groups) {
-    return null;
-  }
-  return groups;
 }
 
 function updateButton(text: string) {

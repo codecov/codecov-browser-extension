@@ -1,3 +1,10 @@
+export type FileMetadata = {
+  owner: string;
+  repo: string;
+  path: string;
+  commit: string;
+}
+
 export enum CoverageStatus {
   COVERED,
   UNCOVERED,
