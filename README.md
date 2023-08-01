@@ -1,11 +1,11 @@
 # Codecov Browser Extension for GitHub
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fcodecov%2Fcodecov-browser-extension.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fcodecov%2Fcodecov-browser-extension?ref=badge_shield)
 
-![Chrome Web Store](https://img.shields.io/chrome-web-store/v/gedikamndpbemklijjkncpnolildpbgo)
+[![Chrome Web Store](https://img.shields.io/chrome-web-store/v/gedikamndpbemklijjkncpnolildpbgo)](https://chrome.google.com/webstore/detail/codecov/gedikamndpbemklijjkncpnolildpbgo)
 ![Chrome Web Store](https://img.shields.io/chrome-web-store/users/gedikamndpbemklijjkncpnolildpbgo)
 ![Chrome Web Store](https://img.shields.io/chrome-web-store/rating/gedikamndpbemklijjkncpnolildpbgo)
 
-![Mozilla Add-on Version](https://img.shields.io/amo/v/%7Bf3924b0d-e29f-4593-b605-084b3d71ed9d%7D)
+[![Mozilla Add-on Version](https://img.shields.io/amo/v/%7Bf3924b0d-e29f-4593-b605-084b3d71ed9d%7D)](https://addons.mozilla.org/en-US/firefox/addon/codecov/)
 ![Mozilla Add-on Users](https://img.shields.io/amo/users/%7Bf3924b0d-e29f-4593-b605-084b3d71ed9d%7D)
 ![Mozilla Add-on Rating](https://img.shields.io/amo/rating/%7Bf3924b0d-e29f-4593-b605-084b3d71ed9d%7D)
 
