@@ -7,7 +7,13 @@ import "tether-drop/dist/css/drop-theme-arrows.css";
 
 import "src/basscss.css";
 import "./style.css";
-import { CoverageStatus, FileCoverageReport, MessageType } from "src/types";
+import {
+  CoverageStatus,
+  FileCoverageReport,
+  FileCoverageReportResponse,
+  FileMetadata,
+  MessageType,
+} from "src/types";
 import {
   componentsStorageKey,
   flagsStorageKey,
@@ -20,7 +26,12 @@ import {
 } from "../common/animation";
 import { colors } from "../common/constants";
 import { createDropdown } from "./utils/dropdown";
-import { getComponents, getCommitReport, getFlags } from "../common/fetchers";
+import {
+  getMetadata,
+  getComponents,
+  getCommitReport,
+  getFlags,
+} from "../common/fetchers";
 import { print } from "src/utils";
 
 const globals: {
@@ -32,20 +43,51 @@ const globals: {
   componentsDrop?: Drop;
 } = {};
 
-async function execute(): Promise<void> {
-  const urlMetadata = getMetadataFromURL();
-  if (!urlMetadata) {
+init().catch((e) => print("unexpected error", e));
+
+function init(): Promise<void> {
+  // this event discovered by "reverse-engineering GitHub"
+  // https://github.com/refined-github/refined-github/blob/main/contributing.md#reverse-engineering-github
+  // TODO: this event is not fired when navigating using the browser's back and forward buttons
+  document.addEventListener("soft-nav:end", () => {
+    clear();
+    main();
+  });
+
+  return main();
+}
+
+async function main(): Promise<void> {
+  let metadata: FileMetadata;
+
+  try {
+    metadata = await getMetadata(document.URL);
+  } catch (e) {
     print("file not detected at current URL");
     return;
   }
 
   globals.coverageButton = createCoverageButton();
 
-  const flags = await getFlags(urlMetadata);
+  process(metadata).catch((e) => {
+    print("unexpected error", e);
+    updateButton("Coverage: ⚠");
+  });
+}
+
+async function process(metadata: FileMetadata): Promise<void> {
+  const flags = await getFlags(metadata).catch((e) => {
+    print("error while fetching flags", e);
+    return [];
+  });
 
   const selectedFlags: string[] = await browser.storage.local
     .get(flagsStorageKey)
-    .then((result) => result[flagsStorageKey] || []);
+    .then((result) => result[flagsStorageKey] || [])
+    .catch((e) => {
+      print("error while fetching selected flags", e);
+      return [];
+    });
 
   // TODO: allow setting selected flags for different files at the same time
   if (
@@ -53,32 +95,42 @@ async function execute(): Promise<void> {
     _.intersection(flags, selectedFlags).length === 0
   ) {
     await handleFlagClick([]);
+    return;
   }
 
   if (flags.length > 0) {
-    const { button: flagsButton, list: flagsList } = await createDropdown({
+    createDropdown({
       title: "Flags",
       tooltip: "Filter coverage by flag",
       options: flags,
-      previousElement: globals.coverageButton,
+      previousElement: globals.coverageButton!,
       selectedOptions: selectedFlags,
       onClick: handleFlagClick,
-    });
-    globals.flagsButton = flagsButton;
-    globals.flagsDrop = new Drop({
-      target: globals.flagsButton,
-      content: flagsList,
-      classes: "drop-theme-arrows codecov-z1 codecov-bg-white",
-      position: "bottom right",
-      openOn: "click",
-    });
+    })
+      .then(({ button, list }) => {
+        globals.flagsButton = button;
+        globals.flagsDrop = new Drop({
+          target: button,
+          content: list,
+          classes: "drop-theme-arrows codecov-z1 codecov-bg-white",
+          position: "bottom right",
+          openOn: "click",
+        });
+      })
+      .catch((e) => {
+        print("error while rendering flags dropdown", e);
+      });
   }
 
-  const components = await getComponents(urlMetadata);
+  const components = await getComponents(metadata);
 
   const selectedComponents: string[] = await browser.storage.local
     .get(componentsStorageKey)
-    .then((result) => result[componentsStorageKey] || []);
+    .then((result) => result[componentsStorageKey] || [])
+    .catch((e) => {
+      print("error while fetching selected components", e);
+      return [];
+    });
 
   // TODO: allow setting selected flags for different files at the same time
   if (
@@ -86,54 +138,72 @@ async function execute(): Promise<void> {
     _.intersection(components, selectedComponents).length === 0
   ) {
     await handleComponentClick([]);
+    return;
   }
 
   if (components.length > 0) {
-    const { button: componentsButton, list: componentsList } =
-      await createDropdown({
-        title: "Components",
-        options: components,
-        tooltip: "Filter coverage by component",
-        previousElement: globals.coverageButton,
-        onClick: handleComponentClick,
-        selectedOptions: selectedComponents,
+    createDropdown({
+      title: "Components",
+      options: components,
+      tooltip: "Filter coverage by component",
+      previousElement: globals.coverageButton!,
+      onClick: handleComponentClick,
+      selectedOptions: selectedComponents,
+    })
+      .then(({ button, list }) => {
+        globals.componentsButton = button;
+        globals.componentsDrop = new Drop({
+          target: button,
+          content: list,
+          classes: "drop-theme-arrows codecov-z1 codecov-bg-white",
+          position: "bottom right",
+          openOn: "click",
+        });
+      })
+      .catch((e) => {
+        print("error while rendering components dropdown", e);
       });
-    globals.componentsButton = componentsButton;
-    globals.componentsDrop = new Drop({
-      target: globals.componentsButton,
-      content: componentsList,
-      classes: "drop-theme-arrows codecov-z1 codecov-bg-white",
-      position: "bottom right",
-      openOn: "click",
-    });
   }
 
-  let coverageReport: any;
-  if (selectedFlags?.length > 0 || selectedComponents?.length > 0) {
-    let coverageReports = [];
-    if (selectedFlags.length > 0) {
-      coverageReports = await Promise.all(
-        selectedFlags.map((flag) =>
-          getCommitReport(urlMetadata, flag, undefined)
+  let coverageReportResponses: Array<FileCoverageReportResponse>;
+  try {
+    if (selectedFlags?.length > 0) {
+      coverageReportResponses = await Promise.all(
+        selectedFlags.map((flag) => getCommitReport(metadata, flag, undefined))
+      );
+    } else if (selectedComponents?.length > 0) {
+      coverageReportResponses = await Promise.all(
+        selectedComponents.map((component) =>
+          getCommitReport(metadata, undefined, component)
         )
       );
     } else {
-      coverageReports = await Promise.all(
-        selectedComponents.map((component) =>
-          getCommitReport(urlMetadata, undefined, component)
-        )
-      );
+      coverageReportResponses = await Promise.all([
+        await getCommitReport(metadata, undefined, undefined),
+      ]);
     }
-    coverageReport = coverageReports
-      .map((report) => {
-        if (report.files?.length) {
-          return Object.fromEntries(report.files[0].line_coverage);
-        } else {
-          return {};
-        }
-      })
-      .reduce((finalReport, currentReport) => {
-        return _.mergeWith(finalReport, currentReport, (x, y) => {
+  } catch (e) {
+    print("error while fetching coverage report(s)", e as Error);
+    updateButton(`Coverage: ⚠`);
+    return;
+  }
+
+  const coverageReports = coverageReportResponses.map(
+    (reportResponse): FileCoverageReport => {
+      const file = reportResponse.files?.[0];
+      return Object.fromEntries(file?.line_coverage || []);
+    }
+  );
+
+  const coverageReport = ((): FileCoverageReport => {
+    if (coverageReports.length === 1) {
+      return coverageReports[0];
+    }
+    return coverageReports.reduce((finalReport, currentReport) => {
+      return _.mergeWith(
+        finalReport,
+        currentReport,
+        (x: CoverageStatus, y: CoverageStatus) => {
           if (x === CoverageStatus.COVERED || y === CoverageStatus.COVERED) {
             return CoverageStatus.COVERED;
           } else if (
@@ -144,28 +214,20 @@ async function execute(): Promise<void> {
           } else {
             return CoverageStatus.UNCOVERED;
           }
-        });
-      }, {});
-    if (!_.isEmpty(coverageReport)) {
-      globals.coverageReport = coverageReport;
-      const coveragePct = calculateCoveragePct();
-      updateButton(`Coverage: ${coveragePct.toFixed(2)}%`);
-    } else {
-      updateButton(`Coverage: N/A`);
-      globals.coverageReport = {};
-    }
-  } else {
-    coverageReport = await getCommitReport(urlMetadata, undefined, undefined);
-    if (coverageReport.files?.length) {
-      const fileReport = coverageReport.files[0];
-      updateButton(`Coverage: ${fileReport.totals.coverage}%`);
-      globals.coverageReport = Object.fromEntries(fileReport.line_coverage);
-    } else {
-      updateButton(`Coverage: N/A`);
-      globals.coverageReport = {};
-    }
+        }
+      );
+    }, {});
+  })();
+
+  if (_.isEmpty(coverageReport)) {
+    updateButton(`Coverage: N/A`);
+    return;
   }
 
+  const coveragePct = calculateCoveragePct(coverageReport);
+  updateButton(`Coverage: ${coveragePct.toFixed(2)}%`);
+
+  globals.coverageReport = coverageReport;
   animateAndAnnotateLines(lineSelector, annotateLine);
 }
 
@@ -202,7 +264,7 @@ async function handleFlagClick(selectedFlags: string[]) {
     [flagsStorageKey]: selectedFlags,
   });
   clear();
-  await execute();
+  await main();
 }
 
 async function handleComponentClick(selectedComponents: string[]) {
@@ -213,27 +275,16 @@ async function handleComponentClick(selectedComponents: string[]) {
     [componentsStorageKey]: selectedComponents,
   });
   clear();
-  await execute();
+  await main();
 }
 
-function calculateCoveragePct(): number {
-  const x = Object.entries(globals.coverageReport!);
-  const totalLines = x.length;
-  const coveredLines = x.filter(
-    ([line, status]) => status !== CoverageStatus.UNCOVERED
+function calculateCoveragePct(coverageReport: FileCoverageReport): number {
+  const report = Object.entries(coverageReport);
+  const totalLines = report.length;
+  const coveredLines = report.filter(
+    ([line, status]) => status === CoverageStatus.COVERED
   ).length;
   return (coveredLines * 100) / totalLines;
-}
-
-function getMetadataFromURL(): { [key: string]: string } | null {
-  const regexp =
-    /\/(?<owner>.+?)\/(?<repo>.+?)\/blob\/(?<ref>.+?)\/(?<path>.+)/;
-  const matches = regexp.exec(window.location.pathname);
-  const groups = matches?.groups;
-  if (!groups) {
-    return null;
-  }
-  return groups;
 }
 
 function updateButton(text: string) {
@@ -242,7 +293,11 @@ function updateButton(text: string) {
 
 function annotateLine(line: HTMLElement) {
   const lineNumber = parseInt(line.getAttribute("data-key")!) + 1;
-  const status = globals.coverageReport![lineNumber];
+  // called from "Coverage: N/A" button on-click handler
+  if (!globals.coverageReport) {
+    return;
+  }
+  const status = globals.coverageReport[lineNumber];
   if (status === CoverageStatus.COVERED) {
     line.style.backgroundColor = alpha(colors.green, 0.25);
   } else if (status === CoverageStatus.UNCOVERED) {
@@ -273,16 +328,3 @@ function clear() {
   clearButtons();
   clearAnimationAndAnnotations();
 }
-
-async function main(): Promise<void> {
-  await execute();
-  // this event discovered by "reverse-engineering GitHub"
-  // https://github.com/refined-github/refined-github/blob/main/contributing.md#reverse-engineering-github
-  // TODO: this event is not fired when navigating using the browser's back and forward buttons
-  document.addEventListener("soft-nav:end", () => {
-    clear();
-    execute();
-  });
-}
-
-main();

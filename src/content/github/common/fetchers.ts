@@ -1,84 +1,78 @@
 import browser from "webextension-polyfill";
-import { MessageType } from "src/types";
+import {
+  FileCoverageReportResponse,
+  FileMetadata,
+  MessageType,
+} from "src/types";
 
-export async function getFlags(url: {
-  [key: string]: string;
-}): Promise<string[]> {
+export async function getMetadata(url: string): Promise<FileMetadata> {
+  const response = await fetch(url).then((response) => response.json());
+  return {
+    owner: response.payload.repo.ownerLogin,
+    repo: response.payload.repo.name,
+    path: response.payload.path,
+    commit: response.payload.refInfo.currentOid,
+  };
+}
+
+export async function getFlags(metadata: FileMetadata): Promise<string[]> {
   const payload = {
     service: "github",
-    owner: url.owner,
-    repo: url.repo,
+    owner: metadata.owner,
+    repo: metadata.repo,
   };
 
-  const flagsResponse = await browser.runtime.sendMessage({
+  const response = await browser.runtime.sendMessage({
     type: MessageType.FETCH_FLAGS_LIST,
     payload,
     referrer: window.location.href,
   });
 
-  const flags = flagsResponse.ok ? flagsResponse.data.results : [];
+  const flags = response.ok ? response.data.results : [];
 
   return flags.map((f: any) => f.flag_name);
 }
 
-export async function getComponents(url: {
-  [key: string]: string;
-}): Promise<string[]> {
+export async function getComponents(metadata: FileMetadata): Promise<string[]> {
   const payload = {
     service: "github",
-    owner: url.owner,
-    repo: url.repo,
+    owner: metadata.owner,
+    repo: metadata.repo,
   };
 
-  const componentsResponse = await browser.runtime.sendMessage({
+  const response = await browser.runtime.sendMessage({
     type: MessageType.FETCH_COMPONENTS_LIST,
     payload,
     referrer: window.location.href,
   });
 
-  const components = componentsResponse.ok ? componentsResponse.data : [];
+  const components = response.ok ? response.data : [];
 
   return components.map((c: any) => c.component_id);
 }
 
 export async function getCommitReport(
-  url: { [key: string]: string },
+  metadata: FileMetadata,
   flag: string | undefined,
   component_id: string | undefined
-) {
-  const commonPayload = {
+): Promise<FileCoverageReportResponse> {
+  const payload = {
     service: "github",
-    owner: url.owner,
-    repo: url.repo,
-    path: url.path,
+    owner: metadata.owner,
+    repo: metadata.repo,
+    path: metadata.path,
+    sha: metadata.commit,
     flag,
     component_id,
   };
 
-  // TODO: check if codecov can figure out whether branch or sha
-  const shaResponse = await browser.runtime.sendMessage({
+  const response = await browser.runtime.sendMessage({
     type: MessageType.FETCH_COMMIT_REPORT,
-    payload: {
-      ...commonPayload,
-      sha: url.ref,
-    },
+    payload,
     referrer: window.location.href,
   });
 
-  if (shaResponse.ok) {
-    return shaResponse.data;
-  }
-
-  const branchResponse = await browser.runtime.sendMessage({
-    type: MessageType.FETCH_COMMIT_REPORT,
-    payload: {
-      ...commonPayload,
-      branch: url.ref,
-    },
-    referrer: window.location.href,
-  });
-
-  return branchResponse.data;
+  return response.data;
 }
 
 export async function getPRReport(url: any) {
