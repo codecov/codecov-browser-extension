@@ -157,21 +157,21 @@ function annotateLine(line: HTMLElement) {
   if (status == null) {
     return;
   }
-  const borderStylePrefix = "2px solid ";
+  const borderStylePrefix = "inset 2px 0 ";
   if (status === CoverageStatus.COVERED) {
-    line.style.borderLeft = `${borderStylePrefix} ${colors.green}`;
+    line.style.boxShadow = `${borderStylePrefix} ${colors.green}`;
   } else if (status === CoverageStatus.UNCOVERED) {
-    line.style.borderLeft = `${borderStylePrefix} ${colors.red}`;
+    line.style.boxShadow = `${borderStylePrefix} ${colors.red}`;
   } else if (status === CoverageStatus.PARTIAL) {
-    line.style.borderLeft = `${borderStylePrefix} ${colors.yellow}`;
+    line.style.boxShadow = `${borderStylePrefix} ${colors.yellow}`;
   } else {
-    line.style.borderLeft = "inherit";
+    line.style.boxShadow = "inherit";
   }
 }
 
 function clearAnimationAndAnnotations() {
   clearAnimation(lineSelector, annotateLine);
-  clearAnnotations((line: HTMLElement) => (line.style.borderLeft = "inherit"));
+  clearAnnotations((line: HTMLElement) => (line.style.boxShadow = "inherit"));
 }
 
 main();
