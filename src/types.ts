@@ -3,6 +3,7 @@ export type FileMetadata = {
   repo: string;
   path: string;
   commit: string;
+  branch: string | undefined;
 };
 
 export enum CoverageStatus {
@@ -15,6 +16,7 @@ export type FileCoverageReportResponse = {
   files?: Array<{
     line_coverage: Array<[number, CoverageStatus]>;
   }>;
+  commit_file_url: string;
 };
 
 export type FileCoverageReport = {
