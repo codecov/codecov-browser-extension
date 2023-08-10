@@ -7,11 +7,16 @@ import {
 
 export async function getMetadata(url: string): Promise<FileMetadata> {
   const response = await fetch(url).then((response) => response.json());
+  let branch = undefined;
+  if (response.payload.refInfo.refType === "branch") {
+    branch = response.payload.refInfo.name;
+  }
   return {
     owner: response.payload.repo.ownerLogin,
     repo: response.payload.repo.name,
     path: response.payload.path,
     commit: response.payload.refInfo.currentOid,
+    branch: branch,
   };
 }
 
@@ -64,6 +69,26 @@ export async function getCommitReport(
     sha: metadata.commit,
     flag,
     component_id,
+  };
+
+  const response = await browser.runtime.sendMessage({
+    type: MessageType.FETCH_COMMIT_REPORT,
+    payload,
+    referrer: window.location.href,
+  });
+
+  return response.data;
+}
+
+export async function getBranchReport(
+  metadata: FileMetadata
+): Promise<FileCoverageReportResponse> {
+  const payload = {
+    service: "github",
+    owner: metadata.owner,
+    repo: metadata.repo,
+    path: metadata.path,
+    branch: metadata.branch,
   };
 
   const response = await browser.runtime.sendMessage({

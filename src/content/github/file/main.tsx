@@ -31,6 +31,7 @@ import {
   getComponents,
   getCommitReport,
   getFlags,
+  getBranchReport,
 } from "../common/fetchers";
 import { print } from "src/utils";
 
@@ -41,6 +42,7 @@ const globals: {
   flagsDrop?: Drop;
   componentsButton?: HTMLElement;
   componentsDrop?: Drop;
+  prompt?: HTMLElement;
 } = {};
 
 init().catch((e) => print("unexpected error", e));
@@ -221,6 +223,8 @@ async function process(metadata: FileMetadata): Promise<void> {
 
   if (_.isEmpty(coverageReport)) {
     updateButton(`Coverage: N/A`);
+    globals.coverageReport = {};
+    await promptPastReport(metadata);
     return;
   }
 
@@ -229,6 +233,42 @@ async function process(metadata: FileMetadata): Promise<void> {
 
   globals.coverageReport = coverageReport;
   animateAndAnnotateLines(lineSelector, annotateLine);
+}
+
+async function promptPastReport(metadata: FileMetadata): Promise<void> {
+  if (!metadata.branch) {
+    return;
+  }
+  const response = await getBranchReport(metadata);
+  const regexp = /app.codecov.io\/github\/.*\/.*\/commit\/(?<commit>.*)\/blob/;
+  const matches = regexp.exec(response.commit_file_url);
+  const commit = matches?.groups?.commit;
+  if (!commit) {
+    print("could not parse commit hash from response for past coverage report");
+    return;
+  }
+  const link = document.URL.replace(
+    /(.*\/blob)\/(.*?)\/(.*)/,
+    `$1/${commit}/$3`
+  );
+  globals.prompt = createPrompt(
+    <span>
+      Coverage report not available for branch HEAD (
+      {metadata.commit.substr(0, 7)}), most recent coverage report for this
+      branch available at commit <a href={link}>{commit.substr(0, 7)}</a>
+    </span>
+  );
+}
+
+function createPrompt(child: any) {
+  const ref = document.querySelector('[data-testid="latest-commit"]')
+    ?.parentElement?.parentElement;
+  if (!ref) {
+    print("could not find reference element to render prompt");
+    return;
+  }
+  const prompt = <div className="codecov-mb2 codecov-mx1">{child}</div>;
+  return ref.insertAdjacentElement("afterend", prompt) as HTMLElement;
 }
 
 function createCoverageButton() {
@@ -309,12 +349,13 @@ function annotateLine(line: HTMLElement) {
   }
 }
 
-function clearButtons() {
+function clearElements() {
   globals.coverageButton?.remove();
   globals.flagsButton?.remove();
   globals.flagsDrop?.remove();
   globals.componentsButton?.remove();
   globals.componentsDrop?.remove();
+  globals.prompt?.remove();
 }
 
 function clearAnimationAndAnnotations() {
@@ -325,6 +366,6 @@ function clearAnimationAndAnnotations() {
 }
 
 function clear() {
-  clearButtons();
+  clearElements();
   clearAnimationAndAnnotations();
 }
