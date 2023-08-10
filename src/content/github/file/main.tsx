@@ -248,8 +248,8 @@ async function promptPastReport(metadata: FileMetadata): Promise<void> {
     return;
   }
   const link = document.URL.replace(
-    /(.*\/blob)\/(.*?)\/(.*)/,
-    `$1/${commit}/$3`
+    `blob/${metadata.branch}`,
+    `blob/${commit}`
   );
   globals.prompt = createPrompt(
     <span>
