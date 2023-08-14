@@ -173,13 +173,18 @@ const Popup = () => {
         </a>
         <div className="space-x-2">
           {useSelfHosted && !isDone && (
-            <button
-              onClick={requestHostPermission}
-              disabled={isUrlPermissionGranted}
-              className="btn btn-ghost text-white"
+            <div
+              className="tooltip tooltip-bottom"
+              data-tip="The extension needs explicit permission to make requests to the self hosted API"
             >
-              Grant Permission
-            </button>
+              <button
+                onClick={requestHostPermission}
+                disabled={isUrlPermissionGranted}
+                className="btn btn-ghost text-white"
+              >
+                Grant Permission
+              </button>
+            </div>
           )}
           <button
             onClick={handleSave}
