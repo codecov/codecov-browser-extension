@@ -171,13 +171,29 @@ const Popup = () => {
         >
           Codecov
         </a>
-        <button
-          onClick={handleSave}
-          disabled={isDone || isFormInvalid || isError}
-          className="btn btn-ghost text-white"
-        >
-          {isDone ? "Done" : isError ? "Error" : "Save"}
-        </button>
+        <div className="space-x-2">
+          {useSelfHosted && !isDone && (
+            <div
+              className="tooltip tooltip-bottom"
+              data-tip="The extension needs explicit permission to make requests to self hosted Codecov"
+            >
+              <button
+                onClick={requestHostPermission}
+                disabled={isUrlPermissionGranted}
+                className="btn btn-ghost text-white"
+              >
+                Grant Permission
+              </button>
+            </div>
+          )}
+          <button
+            onClick={handleSave}
+            disabled={isDone || isFormInvalid || isError}
+            className="btn btn-ghost text-white"
+          >
+            {isDone ? "Done" : isError ? "Error" : "Save"}
+          </button>
+        </div>
         {/*<div className="pr-4">*/}
         {/*  <FontAwesomeIcon icon={faCircleNotch} spin color="white" size="xl" />*/}
         {/*</div>*/}
@@ -219,19 +235,7 @@ const Popup = () => {
                     value={codecovUrl}
                     onChange={handleTextChange(setCodecovUrl)}
                   />
-                  <button
-                    disabled={isUrlPermissionGranted}
-                    className="btn btn-square btn-ghost"
-                    onClick={requestHostPermission}
-                  >
-                    <FontAwesomeIcon icon={faSquareCheck} size="xl" />
-                  </button>
                 </div>
-                <label className="label">
-                  <span className="label-text-alt">
-                    You must click the checkbox and allow permissions
-                  </span>
-                </label>
                 {isUrlError && (
                   <label className="label">
                     <span className="label-text-alt text-red-500">
