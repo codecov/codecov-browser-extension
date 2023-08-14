@@ -175,7 +175,7 @@ const Popup = () => {
           {useSelfHosted && !isDone && (
             <div
               className="tooltip tooltip-bottom"
-              data-tip="The extension needs explicit permission to make requests to the self hosted API"
+              data-tip="The extension needs explicit permission to make requests to self hosted Codecov"
             >
               <button
                 onClick={requestHostPermission}
