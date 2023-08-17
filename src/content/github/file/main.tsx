@@ -12,7 +12,6 @@ import {
   FileCoverageReport,
   FileCoverageReportResponse,
   FileMetadata,
-  MessageType,
 } from "src/types";
 import {
   componentsStorageKey,
@@ -34,6 +33,10 @@ import {
   getBranchReport,
 } from "../common/fetchers";
 import { print } from "src/utils";
+import {
+  selfHostedCodecovURLStorageKey,
+  useSelfHostedStorageKey,
+} from "src/constants";
 
 const globals: {
   coverageReport?: FileCoverageReport;
@@ -233,6 +236,30 @@ async function process(metadata: FileMetadata): Promise<void> {
 
   globals.coverageReport = coverageReport;
   animateAndAnnotateLines(lineSelector, annotateLine);
+  const codecovURL = await getCodecovURL(metadata);
+  globals.prompt = createPrompt(
+    <div className="col col-12">
+      <a href={codecovURL} target="_blank" className="float-right">
+        View on Codecov
+      </a>
+    </div>
+  );
+}
+
+async function getCodecovURL(metadata: FileMetadata): Promise<string> {
+  const baseURL = await browser.storage.sync
+    .get([useSelfHostedStorageKey, selfHostedCodecovURLStorageKey])
+    .then((result) => {
+      const useSelfHosted = result[useSelfHostedStorageKey] || false;
+      const codecovUrl = result[selfHostedCodecovURLStorageKey] || "";
+      if (useSelfHosted) {
+        return codecovUrl;
+      }
+      return "https://app.codecov.io";
+    });
+
+  // "https://app.codecov.io/github/anukul/foobar/commit/cbb7f54a93ef15ed5c61129449e083c6e0e45e7f/blob/mod7.js"
+  return `${baseURL}/github/${metadata.owner}/${metadata.repo}/commit/${metadata.commit}/${metadata.path}`;
 }
 
 async function promptPastReport(metadata: FileMetadata): Promise<void> {
@@ -267,7 +294,9 @@ function createPrompt(child: any) {
     print("could not find reference element to render prompt");
     return;
   }
-  const prompt = <div className="codecov-mb2 codecov-mx1">{child}</div>;
+  const prompt = (
+    <div className="codecov-mb2 codecov-mx1 codecov-clearfix">{child}</div>
+  );
   return ref.insertAdjacentElement("afterend", prompt) as HTMLElement;
 }
 

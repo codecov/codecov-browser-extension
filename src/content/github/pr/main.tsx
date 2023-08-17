@@ -61,6 +61,18 @@ function createContainer() {
   );
 
   parent.prepend(element);
+
+  const fooParent = document.querySelector(
+    '[data-target="diff-layout.diffToolbar"]'
+  );
+
+  if (!fooParent) {
+    return;
+  }
+
+  const foo = <div className="codecov-clearfix">foo</div>;
+
+  fooParent.append(foo);
 }
 
 function getMetadataFromURL(): { [key: string]: string } | null {
@@ -98,12 +110,12 @@ function updateContainer(head: number, patch: number, change: number) {
       <div className="codecov-mx2">
         Patch: <strong>{patch.toFixed(2)}%</strong>
       </div>
-      <div className="codecov-mx2">
+      <div className="codecov-ml2">
         Change: <strong>{displayChange(change)}%</strong>
       </div>
-      <button className="btn btn-sm ml-2" onClick={handleToggleClick}>
-        Hide Coverage
-      </button>
+      {/*<button className="btn btn-sm ml-2" onClick={handleToggleClick}>*/}
+      {/*  Hide Coverage*/}
+      {/*</button>*/}
     </div>
   );
 
