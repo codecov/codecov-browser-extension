@@ -35,7 +35,7 @@ async function execute() {
   if (!urlMetadata.isDiff) {
     // if not on diff view, dispatch API request
     // promise will be resolved when needed
-    getPRReport(urlMetadata);
+    await getPRReport(urlMetadata);
     return;
   }
 
