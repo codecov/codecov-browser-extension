@@ -106,6 +106,7 @@ export async function getPRReport(url: any) {
     owner: url.owner,
     repo: url.repo,
     pullid: url.id,
+    isDiff: url.isDiff,
   };
 
   const response = await browser.runtime.sendMessage({
@@ -114,5 +115,6 @@ export async function getPRReport(url: any) {
     referrer: window.location.href,
   });
 
-  return response.data;
+  // does not await response when called with isDiff: false
+  return response?.data || {};
 }

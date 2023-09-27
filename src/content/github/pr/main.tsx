@@ -32,6 +32,13 @@ async function execute() {
     return;
   }
 
+  if (!urlMetadata.isDiff) {
+    // if not on diff view, dispatch API request
+    // promise will be resolved when needed
+    getPRReport(urlMetadata);
+    return;
+  }
+
   createContainer();
 
   const coverageReport = await getPRReport(urlMetadata);
@@ -64,7 +71,8 @@ function createContainer() {
 }
 
 function getMetadataFromURL(): { [key: string]: string } | null {
-  const regexp = /\/(?<owner>.+?)\/(?<repo>.+?)\/pull\/(?<id>\d+?)\/files/;
+  const regexp =
+    /\/(?<owner>.+?)\/(?<repo>.+?)\/pull\/(?<id>\d+)(\/(?<isDiff>files))?/;
   const matches = regexp.exec(window.location.pathname);
   const groups = matches?.groups;
   if (!groups) {
