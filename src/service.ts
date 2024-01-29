@@ -12,7 +12,7 @@ import {
 
 export class Codecov {
   static baseUrl = "https://api.codecov.io";
-  static checkAuthPath = "/api/v2/github/codecov";
+  static checkAuthPath = "/api/v2/github/";
 
   static _init() {
     fetchIntercept.register({
