@@ -18,6 +18,17 @@ Automatically see code coverage data and line annotations while browsing files o
 
 If you wish to simply use the extension, it is available as a [Firefox Add On](https://addons.mozilla.org/en-US/firefox/addon/codecov/) and a [Chrome Extension](https://chrome.google.com/webstore/detail/codecov/gedikamndpbemklijjkncpnolildpbgo).
 
+## Enabling
+
+- The extension uses your Codecov logged-in session to determine what private repos you have access to.
+  - Please make sure to log in to Codecov.
+
+- Contrary to the screenshot above, the coverage may be indicated by small green and red bars to the left of the line.
+
+__Note to Firefox users__: Required permissions must be granted manually on [about:addons](about:addons)
+
+<img width="692" alt="image" src="https://github.com/codecov/codecov-browser-extension/assets/44864521/7db5ba9f-2ac9-46ea-beec-ae22b85290cb">
+
 
 ## About this extension 
 
@@ -35,8 +46,6 @@ Pre-requisites:
 * Must use either Firefox or Google Chrome web browsers.
 * Must have GitHub's Global navigation update enabled  
 
-How to enable: Click your avatar at the top-right of a GitHub page and select “Feature preview”. Then select “Global navigation update” and click the Enable button located at the top right of the modal.
-The extension uses your logged-in session to determine what private repos you have access to. Please make sure to log in to Codecov using your web browser to view coverage data for private repos in GitHub,
 
 ## Use with Self-Hosted and Dedicated Cloud Versions of Codecov
 You can use this extension against installations of Codecov and GitHub that are:
