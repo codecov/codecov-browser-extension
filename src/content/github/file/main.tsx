@@ -12,7 +12,6 @@ import {
   FileCoverageReport,
   FileCoverageReportResponse,
   FileMetadata,
-  MessageType,
 } from "src/types";
 import {
   componentsStorageKey,
@@ -34,6 +33,7 @@ import {
   getBranchReport,
 } from "../common/fetchers";
 import { print } from "src/utils";
+import { isFileUrl } from "../common/utils";
 
 const globals: {
   coverageReport?: FileCoverageReport;
@@ -60,14 +60,13 @@ function init(): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  let metadata: FileMetadata;
-
-  try {
-    metadata = await getMetadata(document.URL);
-  } catch (e) {
+  if (!isFileUrl(document.URL)) {
     print("file not detected at current URL");
     return;
   }
+
+  let metadata: FileMetadata;
+  metadata = await getMetadata(document.URL);
 
   globals.coverageButton = createCoverageButton();
 

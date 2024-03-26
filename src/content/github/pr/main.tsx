@@ -4,7 +4,7 @@ import _ from "lodash";
 
 import "src/basscss.css";
 import { displayChange } from "src/utils";
-import { CoverageStatus, MessageType, PullCoverageReport } from "src/types";
+import { CoverageStatus, PullCoverageReport } from "src/types";
 import {
   animateAndAnnotateLines,
   clearAnimation,
@@ -14,6 +14,7 @@ import { lineSelector } from "./constants";
 import { colors } from "../common/constants";
 import { print } from "src/utils";
 import { getPRReport } from "../common/fetchers";
+import { isPrUrl } from "../common/utils";
 
 const globals: {
   coverageReport?: PullCoverageReport;
@@ -26,7 +27,13 @@ async function main() {
 }
 
 async function execute() {
+  if (!isPrUrl(document.URL)) {
+    print("PR not detected at current URL");
+    return;
+  }
+
   const urlMetadata = getMetadataFromURL();
+
   if (!urlMetadata) {
     print("PR not detected at current URL");
     return;
