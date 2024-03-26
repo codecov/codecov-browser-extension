@@ -6,7 +6,11 @@ import {
 } from "src/types";
 
 export async function getMetadata(url: string): Promise<FileMetadata> {
-  const response = await fetch(url).then((response) => response.json());
+  const response = await fetch(url, {
+    headers: {
+      "Accept": "application/json",
+    },
+  }).then((response) => response.json());
   let branch = undefined;
   if (response.payload.refInfo.refType === "branch") {
     branch = response.payload.refInfo.name;
