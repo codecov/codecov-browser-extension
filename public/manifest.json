@@ -16,8 +16,12 @@
 
   "content_scripts": [
     {
-      "matches": ["*://github.com/*"],
-      "js": ["js/vendor.js", "js/githubFile.js", "js/githubPR.js"]
+      "matches": ["*://github.com/*/*/blob/*"],
+      "js": ["js/vendor.js", "js/githubFile.js"]
+    },
+    {
+      "matches": ["*://github.com/*/*/pull/*/files*"],
+      "js": ["js/vendor.js", "js/githubPR.js"]
     }
   ],
 
