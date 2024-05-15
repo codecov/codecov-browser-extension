@@ -15,15 +15,20 @@ import { colors } from "../common/constants";
 import { print } from "src/utils";
 import { getPRReport } from "../common/fetchers";
 import { isPrUrl } from "../common/utils";
+import Sentry from "src/content/common/sentry";
 
 const globals: {
   coverageReport?: PullCoverageReport;
 } = {};
 
 async function main() {
-  document.addEventListener("soft-nav:end", execute);
-
-  await execute();
+  try {
+    document.addEventListener("soft-nav:end", execute);
+    await execute();
+  } catch (e) {
+    Sentry.captureException(e)
+    throw e
+  }
 }
 
 async function execute() {
