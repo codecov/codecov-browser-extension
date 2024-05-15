@@ -13,6 +13,7 @@
   "dependencies": {
     "@fortawesome/free-solid-svg-icons": "^6.3.0",
     "@fortawesome/react-fontawesome": "^0.2.0",
+    "@sentry/browser": "^8.0.0",
     "clsx": "^1.2.1",
     "code-tag": "^1.1.0",
     "color-alpha": "^1.1.3",
@@ -28,6 +29,7 @@
     "whatwg-fetch": "^3.6.2"
   },
   "devDependencies": {
+    "@sentry/webpack-plugin": "^2.16.1",
     "@types/chrome": "0.0.158",
     "@types/lodash": "^4.14.191",
     "@types/react": "^18.0.28",
