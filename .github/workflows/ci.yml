@@ -11,7 +11,11 @@ jobs:
         with:
           node-version: '18.x'
       - run: npm ci
-      - run: npm run build
+      - name: Build extension
+        run: npm run build
+        env:
+          SENTRY_DSN: ${{ env.SENTRY_DSN }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
       - run: |
           jq --arg version "$VERSION" '.version=$version' dist/manifest.json > manifest.tmp.json \
             && mv manifest.tmp.json dist/manifest.json
