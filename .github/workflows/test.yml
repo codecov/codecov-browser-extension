@@ -1,0 +1,11 @@
+name: testing
+on:
+  push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "$SENTRY_DSN"
+      - run: echo "$SENTRY_DSN"
+        env:
+          SENTRY_DSN: ${{ env.SENTRY_DSN }}
