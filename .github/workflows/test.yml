@@ -6,8 +6,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo "$SENTRY_DSN"
-      - run: echo "${{ SENTRY_DSN }}"
-      - run: echo "${{ env.SENTRY_DSN }}"
-      - run: echo "$SENTRY_DSN"
         env:
-          SENTRY_DSN: ${{ env.SENTRY_DSN }}
+          SENTRY_DSN: ${{ vars.SENTRY_DSN }}
