@@ -34,6 +34,7 @@ import {
 } from "../common/fetchers";
 import { print } from "src/utils";
 import { isFileUrl } from "../common/utils";
+import Sentry from '../../common/sentry';
 
 const globals: {
   coverageReport?: FileCoverageReport;
@@ -45,7 +46,7 @@ const globals: {
   prompt?: HTMLElement;
 } = {};
 
-init().catch((e) => print("unexpected error", e));
+init()
 
 function init(): Promise<void> {
   // this event discovered by "reverse-engineering GitHub"
@@ -60,20 +61,22 @@ function init(): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  if (!isFileUrl(document.URL)) {
-    print("file not detected at current URL");
-    return;
+  try {
+    if (!isFileUrl(document.URL)) {
+      print("file not detected at current URL");
+      return;
+    }
+
+    let metadata: FileMetadata;
+    metadata = await getMetadata(document.URL);
+
+    globals.coverageButton = createCoverageButton();
+
+    process(metadata)
+  } catch (e) {
+    Sentry.captureException(e)
+    throw e
   }
-
-  let metadata: FileMetadata;
-  metadata = await getMetadata(document.URL);
-
-  globals.coverageButton = createCoverageButton();
-
-  process(metadata).catch((e) => {
-    print("unexpected error", e);
-    updateButton("Coverage: ⚠");
-  });
 }
 
 async function process(metadata: FileMetadata): Promise<void> {
@@ -118,9 +121,6 @@ async function process(metadata: FileMetadata): Promise<void> {
           openOn: "click",
         });
       })
-      .catch((e) => {
-        print("error while rendering flags dropdown", e);
-      });
   }
 
   const components = await getComponents(metadata);
@@ -161,9 +161,6 @@ async function process(metadata: FileMetadata): Promise<void> {
           openOn: "click",
         });
       })
-      .catch((e) => {
-        print("error while rendering components dropdown", e);
-      });
   }
 
   let coverageReportResponses: Array<FileCoverageReportResponse>;
@@ -184,9 +181,8 @@ async function process(metadata: FileMetadata): Promise<void> {
       ]);
     }
   } catch (e) {
-    print("error while fetching coverage report(s)", e as Error);
     updateButton(`Coverage: ⚠`);
-    return;
+    throw e;
   }
 
   const coverageReports = coverageReportResponses.map(
@@ -243,8 +239,7 @@ async function promptPastReport(metadata: FileMetadata): Promise<void> {
   const matches = regexp.exec(response.commit_file_url);
   const commit = matches?.groups?.commit;
   if (!commit) {
-    print("could not parse commit hash from response for past coverage report");
-    return;
+    throw new Error("Could not parse commit hash from response for past coverage report")
   }
   const link = document.URL.replace(
     `blob/${metadata.branch}`,
@@ -263,8 +258,7 @@ function createPrompt(child: any) {
   const ref = document.querySelector('[data-testid="latest-commit"]')
     ?.parentElement?.parentElement;
   if (!ref) {
-    print("could not find reference element to render prompt");
-    return;
+    throw new Error("Could not find reference element to render prompt")
   }
   const prompt = <div className="codecov-mb2 codecov-mx1">{child}</div>;
   return ref.insertAdjacentElement("afterend", prompt) as HTMLElement;
@@ -273,7 +267,7 @@ function createPrompt(child: any) {
 function createCoverageButton() {
   const rawButton = document.querySelector('[data-testid="raw-button"]');
   if (!rawButton) {
-    throw "raw button not found";
+    throw new Error("Raw button not found");
   }
   const codecovButton = rawButton.cloneNode(true) as HTMLElement;
   codecovButton.addEventListener("click", (event) => {
