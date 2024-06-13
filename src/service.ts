@@ -13,6 +13,7 @@ import {
 export class Codecov {
   static baseUrl = "https://api.codecov.io";
   static checkAuthPath = "/api/v2/github/codecov";
+  static cache: { [pullUrl: string]: any } = {};
 
   static _init() {
     fetchIntercept.register({
@@ -104,7 +105,7 @@ export class Codecov {
   }
 
   static async fetchPRComparison(payload: any, referrer: string): Promise<any> {
-    const { service, owner, repo, pullid } = payload;
+    const { service, owner, repo, pullid, isDiff } = payload;
 
     const url = new URL(
       `/api/v2/${service}/${owner}/repos/${repo}/compare`,
@@ -113,16 +114,24 @@ export class Codecov {
     const params = { pullid };
     url.search = new URLSearchParams(params).toString();
 
-    const response = await fetch(url.toString(), {
-      headers: {
-        Referrer: referrer,
-      },
-    });
-    const data = await response.json();
+    let response = await Promise.resolve(this.cache[url.toString()]);
+    if (!response?.ok) {
+      this.cache[url.toString()] = fetch(url.toString(), {
+        headers: {
+          Referrer: referrer,
+        },
+      });
+    }
 
+    if (!isDiff) {
+      return;
+    }
+
+    // await promise immediately if requested from diff view
+    response = await Promise.resolve(this.cache[url.toString()]);
     return {
       ok: response.ok,
-      data,
+      data: await response.clone().json(),
     };
   }
 
