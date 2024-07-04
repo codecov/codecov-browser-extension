@@ -33,10 +33,10 @@ Once installed, get:
 Pre-requisites: 
 
 * Must use either Firefox or Google Chrome web browsers.
-* Must have GitHub's Global navigation update enabled  
 
-How to enable: Click your avatar at the top-right of a GitHub page and select “Feature preview”. Then select “Global navigation update” and click the Enable button located at the top right of the modal.
-The extension uses your logged-in session to determine what private repos you have access to. Please make sure to log in to Codecov using your web browser to view coverage data for private repos in GitHub,
+How to enable: 
+
+The extension uses your logged-in session to determine what private repos you have access to. Please make sure to log in to Codecov using your web browser to view coverage data for private repos in GitHub.
 
 ## Use with Self-Hosted and Dedicated Cloud Versions of Codecov
 You can use this extension against installations of Codecov and GitHub that are:
