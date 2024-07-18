@@ -17,6 +17,7 @@ import {
   componentsStorageKey,
   flagsStorageKey,
   lineSelector,
+  noVirtLineSelector,
 } from "./utils/constants";
 import {
   animateAndAnnotateLines,
@@ -228,6 +229,7 @@ async function process(metadata: FileMetadata): Promise<void> {
 
   globals.coverageReport = coverageReport;
   animateAndAnnotateLines(lineSelector, annotateLine);
+  animateAndAnnotateLines(noVirtLineSelector, annotateLine);
 }
 
 async function promptPastReport(metadata: FileMetadata): Promise<void> {
@@ -275,6 +277,7 @@ function createCoverageButton() {
     const isInactive = codecovButton.getAttribute("data-inactive");
     if (isInactive == "true") {
       animateAndAnnotateLines(lineSelector, annotateLine);
+      animateAndAnnotateLines(noVirtLineSelector, annotateLine);
       codecovButton.removeAttribute("data-inactive");
       codecovButton.style.opacity = "1";
     } else {
@@ -325,7 +328,15 @@ function updateButton(text: string) {
 }
 
 function annotateLine(line: HTMLElement) {
-  const lineNumber = parseInt(line.getAttribute("data-key")!) + 1;
+  let lineNumber = _.parseInt(line.getAttribute("data-key")!) + 1;
+  const lineNumberString = line.getAttribute("data-key");
+  if (lineNumberString) {
+    lineNumber = _.parseInt(lineNumberString) + 1; // Virtualized lines have data-key="{number - 1}"
+  } else {
+    const noVirtLineNumberString = line.getAttribute("id");
+    if (!noVirtLineNumberString) return;
+    lineNumber = _.parseInt(noVirtLineNumberString.slice(2)); // Non-virtualized lines have id="LC{number}"
+  }
   // called from "Coverage: N/A" button on-click handler
   if (!globals.coverageReport) {
     return;
