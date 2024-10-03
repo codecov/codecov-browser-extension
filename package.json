@@ -13,7 +13,7 @@
   "dependencies": {
     "@fortawesome/free-solid-svg-icons": "^6.3.0",
     "@fortawesome/react-fontawesome": "^0.2.0",
-    "@sentry/browser": "^8.0.0",
+    "@sentry/browser": "^8.33.0",
     "clsx": "^1.2.1",
     "code-tag": "^1.1.0",
     "color-alpha": "^1.1.3",
