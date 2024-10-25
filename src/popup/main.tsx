@@ -142,14 +142,11 @@ const Popup = () => {
       }
     }
 
-    await browser.runtime.sendMessage({
-      type: MessageType.SET_STORAGE_VALUES,
-      payload: {
-        [useSelfHostedStorageKey]: useSelfHosted,
-        [selfHostedCodecovURLStorageKey]: codecovUrl,
-        [selfHostedGitHubURLStorageKey]: githubUrl,
-        [selfHostedCodecovApiToken]: codecovApiToken,
-      },
+    await browser.storage.sync.set({
+      [useSelfHostedStorageKey]: useSelfHosted,
+      [selfHostedCodecovURLStorageKey]: codecovUrl,
+      [selfHostedGitHubURLStorageKey]: githubUrl,
+      [selfHostedCodecovApiToken]: codecovApiToken,
     });
 
     resetEphemeralState();

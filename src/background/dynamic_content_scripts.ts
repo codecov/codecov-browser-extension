@@ -55,7 +55,3 @@ export async function unregisterContentScriptIfExists(
 
   return true;
 }
-
-export async function setStorageValues(payload: any): Promise<void> {
-  await browser.storage.sync.set(payload);
-}
