@@ -43,4 +43,5 @@ export enum MessageType {
   FETCH_COMPONENTS_LIST = "fetch_components_list",
   REGISTER_CONTENT_SCRIPTS = "register_content_scripts",
   UNREGISTER_CONTENT_SCRIPTS = "unregister_content_scripts",
+  SET_STORAGE_VALUES = "set_storage_values",
 }

@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import browser from "webextension-polyfill";
 import clsx from "clsx";
@@ -142,11 +142,14 @@ const Popup = () => {
       }
     }
 
-    await browser.storage.sync.set({
-      [useSelfHostedStorageKey]: useSelfHosted,
-      [selfHostedCodecovURLStorageKey]: codecovUrl,
-      [selfHostedGitHubURLStorageKey]: githubUrl,
-      [selfHostedCodecovApiToken]: codecovApiToken,
+    await browser.runtime.sendMessage({
+      type: MessageType.SET_STORAGE_VALUES,
+      payload: {
+        [useSelfHostedStorageKey]: useSelfHosted,
+        [selfHostedCodecovURLStorageKey]: codecovUrl,
+        [selfHostedGitHubURLStorageKey]: githubUrl,
+        [selfHostedCodecovApiToken]: codecovApiToken,
+      },
     });
 
     resetEphemeralState();

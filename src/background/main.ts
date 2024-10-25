@@ -4,8 +4,15 @@ import { MessageType } from "src/types";
 import { Codecov } from "src/service";
 import {
   registerContentScript,
+  setStorageValues,
   unregisterContentScriptIfExists,
 } from "./dynamic_content_scripts";
+import {
+  selfHostedCodecovApiToken,
+  selfHostedCodecovURLStorageKey,
+  selfHostedGitHubURLStorageKey,
+  useSelfHostedStorageKey,
+} from "src/constants";
 
 async function main(): Promise<void> {
   browser.runtime.onMessage.addListener(handleMessages);
@@ -31,6 +38,8 @@ async function handleMessages(message: {
       return registerContentScript(message.payload);
     case MessageType.UNREGISTER_CONTENT_SCRIPTS:
       return unregisterContentScriptIfExists(message.payload);
+    case MessageType.SET_STORAGE_VALUES:
+      return setStorageValues(message.payload);
   }
 }
 

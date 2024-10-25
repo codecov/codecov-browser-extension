@@ -8,6 +8,7 @@ export async function registerContentScript(payload: any): Promise<boolean> {
   const { url } = payload;
 
   const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+
   if (!tabs[0]?.url?.startsWith(url)) {
     return false;
   }
@@ -35,9 +36,15 @@ export async function registerContentScript(payload: any): Promise<boolean> {
 export async function unregisterContentScriptIfExists(
   payload: any
 ): Promise<boolean> {
-  const registrations = await browser.scripting.getRegisteredContentScripts({
-    ids: [dynamicContentScriptRegistrationId],
-  });
+  let registrations: browser.Scripting.RegisteredContentScript[];
+  try {
+    registrations = await browser.scripting.getRegisteredContentScripts({
+      ids: [dynamicContentScriptRegistrationId],
+    });
+  } catch (error) {
+    return true;
+  }
+
   if (registrations.length === 0) {
     return true;
   }
@@ -47,4 +54,8 @@ export async function unregisterContentScriptIfExists(
   });
 
   return true;
+}
+
+export async function setStorageValues(payload: any): Promise<void> {
+  await browser.storage.sync.set(payload);
 }
