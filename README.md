@@ -55,7 +55,7 @@ You can provide this information by using the Settings menu for the Extension in
 
 We have published a Safari port of the extension, but it comes with the caveat that you _must_ use a Codecov API token for the extension to work.
 
-To use the extension with a cloud Codecov API token, follow the instructions above in [](#use-with-self-hosted-and-dedicated-cloud-versions-of-codecov), but generate the API token at [](https://app.codecov.io) and use the cloud urls for Codecov's API (`https://api.codecov.io`) and Github (`https://github.com`). Note that this also works on Chrome and Firefox, should you want to do that.
+To use the extension with a cloud Codecov API token, follow the instructions above [here](#use-with-self-hosted-and-dedicated-cloud-versions-of-codecov), but generate the API token in [cloud Codecov](https://app.codecov.io) and use the cloud urls for Codecov's API (`https://api.codecov.io`) and Github (`https://github.com`). Note that this also works on Chrome and Firefox, should you want to do that.
 
 We may fix this restriction in the future should the demand exist, but for now, this is just a low effort conversion provided as is.
 
