@@ -27,6 +27,7 @@ export class Codecov {
           selfHostedGitHubURLStorageKey,
           selfHostedCodecovApiToken,
         ]);
+
         const useSelfHosted = result[useSelfHostedStorageKey] || false;
         // self hosted not selected
         if (!useSelfHosted) {

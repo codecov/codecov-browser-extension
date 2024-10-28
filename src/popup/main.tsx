@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import browser from "webextension-polyfill";
 import clsx from "clsx";

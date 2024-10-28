@@ -8,6 +8,7 @@ export async function registerContentScript(payload: any): Promise<boolean> {
   const { url } = payload;
 
   const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+
   if (!tabs[0]?.url?.startsWith(url)) {
     return false;
   }
@@ -35,9 +36,25 @@ export async function registerContentScript(payload: any): Promise<boolean> {
 export async function unregisterContentScriptIfExists(
   payload: any
 ): Promise<boolean> {
-  const registrations = await browser.scripting.getRegisteredContentScripts({
-    ids: [dynamicContentScriptRegistrationId],
-  });
+  let registrations: browser.Scripting.RegisteredContentScript[];
+  try {
+    registrations = await browser.scripting.getRegisteredContentScripts({
+      ids: [dynamicContentScriptRegistrationId],
+    });
+  } catch (error: any) {
+    // Safari throws if the script id doesn't exist, so handle that gracefully
+    if (
+      error instanceof Error &&
+      error.message.match(
+        /Invalid call to scripting.getRegisteredContentScripts\(\)\. No script with ID '.*'/
+      )
+    ) {
+      return true;
+    } else {
+      throw error;
+    }
+  }
+
   if (registrations.length === 0) {
     return true;
   }
