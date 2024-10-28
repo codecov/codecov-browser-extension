@@ -41,8 +41,18 @@ export async function unregisterContentScriptIfExists(
     registrations = await browser.scripting.getRegisteredContentScripts({
       ids: [dynamicContentScriptRegistrationId],
     });
-  } catch (error) {
-    return true;
+  } catch (error: any) {
+    // Safari throws if the script id doesn't exist, so handle that gracefully
+    if (
+      error instanceof Error &&
+      error.message.match(
+        /Invalid call to scripting.getRegisteredContentScripts\(\)\. No script with ID '.*'/
+      )
+    ) {
+      return true;
+    } else {
+      throw error;
+    }
   }
 
   if (registrations.length === 0) {
