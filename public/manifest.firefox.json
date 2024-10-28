@@ -5,6 +5,12 @@
   "description": "Codecov Browser Extension",
   "version": "0.1.0",
 
+  "icons": {
+    "16": "codecov-16x16.png",
+    "48": "codecov-48x48.png",
+    "128": "codecov-128x128.png"
+  },
+
   "options_ui": {
     "page": "options.html"
   },
