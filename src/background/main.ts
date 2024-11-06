@@ -13,11 +13,6 @@ async function main(): Promise<void> {
     // @ts-ignore SENTRY_DSN is populated by Webpack at build time
     dsn: SENTRY_DSN,
 
-    // This enables automatic instrumentation (highly recommended),
-    // but is not necessary for purely manual usage
-    // If you only want to use custom instrumentation:
-    // * Remove the `BrowserTracing` integration
-    // * add `Sentry.addTracingExtensions()` above your Sentry.init() call
     integrations: [
       Sentry.browserTracingIntegration({
         // disable automatic span creation
@@ -26,8 +21,6 @@ async function main(): Promise<void> {
       }),
     ],
 
-    // We recommend adjusting this value in production, or using tracesSampler
-    // for finer control
     tracesSampleRate: 1.0,
   });
   browser.runtime.onMessage.addListener(handleMessages);
