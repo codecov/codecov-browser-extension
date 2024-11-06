@@ -35,7 +35,7 @@ import {
 } from "../common/fetchers";
 import { print } from "src/utils";
 import { isFileUrl } from "../common/utils";
-import Sentry from '../../common/sentry';
+import Sentry from "../../common/sentry";
 
 const globals: {
   coverageReport?: FileCoverageReport;
@@ -47,7 +47,7 @@ const globals: {
   prompt?: HTMLElement;
 } = {};
 
-init()
+init();
 
 function init(): Promise<void> {
   // this event discovered by "reverse-engineering GitHub"
@@ -73,10 +73,10 @@ async function main(): Promise<void> {
 
     globals.coverageButton = createCoverageButton();
 
-    process(metadata)
+    process(metadata);
   } catch (e) {
-    Sentry.captureException(e)
-    throw e
+    Sentry.captureException(e);
+    throw e;
   }
 }
 
@@ -111,17 +111,16 @@ async function process(metadata: FileMetadata): Promise<void> {
       previousElement: globals.coverageButton!,
       selectedOptions: selectedFlags,
       onClick: handleFlagClick,
-    })
-      .then(({ button, list }) => {
-        globals.flagsButton = button;
-        globals.flagsDrop = new Drop({
-          target: button,
-          content: list,
-          classes: "drop-theme-arrows codecov-z1 codecov-bg-white",
-          position: "bottom right",
-          openOn: "click",
-        });
-      })
+    }).then(({ button, list }) => {
+      globals.flagsButton = button;
+      globals.flagsDrop = new Drop({
+        target: button,
+        content: list,
+        classes: "drop-theme-arrows codecov-z1 codecov-bg-white",
+        position: "bottom right",
+        openOn: "click",
+      });
+    });
   }
 
   const components = await getComponents(metadata);
@@ -151,17 +150,16 @@ async function process(metadata: FileMetadata): Promise<void> {
       previousElement: globals.coverageButton!,
       onClick: handleComponentClick,
       selectedOptions: selectedComponents,
-    })
-      .then(({ button, list }) => {
-        globals.componentsButton = button;
-        globals.componentsDrop = new Drop({
-          target: button,
-          content: list,
-          classes: "drop-theme-arrows codecov-z1 codecov-bg-white",
-          position: "bottom right",
-          openOn: "click",
-        });
-      })
+    }).then(({ button, list }) => {
+      globals.componentsButton = button;
+      globals.componentsDrop = new Drop({
+        target: button,
+        content: list,
+        classes: "drop-theme-arrows codecov-z1 codecov-bg-white",
+        position: "bottom right",
+        openOn: "click",
+      });
+    });
   }
 
   let coverageReportResponses: Array<FileCoverageReportResponse>;
@@ -241,7 +239,9 @@ async function promptPastReport(metadata: FileMetadata): Promise<void> {
   const matches = regexp.exec(response.commit_file_url);
   const commit = matches?.groups?.commit;
   if (!commit) {
-    throw new Error("Could not parse commit hash from response for past coverage report")
+    throw new Error(
+      "Could not parse commit hash from response for past coverage report"
+    );
   }
   const link = document.URL.replace(
     `blob/${metadata.branch}`,
@@ -260,7 +260,7 @@ function createPrompt(child: any) {
   const ref = document.querySelector('[data-testid="latest-commit"]')
     ?.parentElement?.parentElement;
   if (!ref) {
-    throw new Error("Could not find reference element to render prompt")
+    throw new Error("Could not find reference element to render prompt");
   }
   const prompt = <div className="codecov-mb2 codecov-mx1">{child}</div>;
   return ref.insertAdjacentElement("afterend", prompt) as HTMLElement;
