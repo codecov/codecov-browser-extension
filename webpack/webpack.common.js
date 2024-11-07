@@ -50,7 +50,7 @@ module.exports = {
       browser: "webextensions-polyfill",
     }),
     new DefinePlugin({
-      SENTRY_DSN: process.env.SENTRY_DSN
-    })
+      SENTRY_DSN: JSON.stringify(process.env.SENTRY_DSN),
+    }),
   ],
 };
