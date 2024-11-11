@@ -26,8 +26,8 @@ async function main() {
     document.addEventListener("soft-nav:end", execute);
     await execute();
   } catch (e) {
-    Sentry.captureException(e)
-    throw e
+    Sentry.captureException(e);
+    throw e;
   }
 }
 
@@ -100,7 +100,7 @@ const handleToggleClick: React.MouseEventHandler = (event) => {
 };
 
 function updateContainer(head: number, patch: number, change: number) {
-  const parent = document.getElementById("coverage-report-data")!;
+  const parent = document.getElementById("coverage-report-data");
 
   const element = (
     <div className="codecov-flex codecov-items-center">
@@ -119,17 +119,17 @@ function updateContainer(head: number, patch: number, change: number) {
     </div>
   );
 
-  parent.replaceChildren(element);
+  parent?.replaceChildren(element);
 }
 
 function showError() {
-  const parent = document.getElementById("coverage-report-data")!;
+  const parent = document.getElementById("coverage-report-data");
 
   const element = (
     <div className="my-auto mr-6">Coverage report not available</div>
   );
 
-  parent.replaceChildren(element);
+  parent?.replaceChildren(element);
 }
 
 function transformReport(filesReport: any) {
