@@ -204,7 +204,15 @@ async function process(metadata: FileMetadata): Promise<void> {
 
   let coverageReportResponses: Array<FileCoverageReportResponse>;
   try {
-    if (selectedFlags?.length > 0) {
+    if (selectedFlags?.length > 0 && selectedComponents?.length > 0) {
+      coverageReportResponses = await Promise.all(
+        selectedFlags.flatMap((flag) =>
+          selectedComponents.map((component) =>
+            getReportFn(metadata, flag, component)
+          )
+        )
+      );
+    } else if (selectedFlags?.length > 0) {
       coverageReportResponses = await Promise.all(
         selectedFlags.map((flag) => getReportFn(metadata, flag, undefined))
       );
@@ -215,9 +223,9 @@ async function process(metadata: FileMetadata): Promise<void> {
         )
       );
     } else {
-      coverageReportResponses = await Promise.all([
+      coverageReportResponses = [
         await getReportFn(metadata, undefined, undefined),
-      ]);
+      ];
     }
   } catch (e) {
     updateButton(`Coverage: ⚠`);
