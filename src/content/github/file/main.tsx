@@ -32,8 +32,8 @@ import {
   getBranchReport,
 } from "../common/fetchers";
 import { print } from "src/utils";
-import { isFileUrl } from "../common/utils";
 import Sentry from "../../common/sentry";
+import { isFileUrl } from "../common/utils";
 
 const globals: {
   coverageReport?: FileCoverageReport;
@@ -60,21 +60,21 @@ function init(): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  const urlMetadata = getMetadataFromURL();
-  if (!urlMetadata) {
-    print("file not detected at current URL");
-    return;
+  try {
+    const urlMetadata = getMetadataFromURL();
+    if (!urlMetadata) {
+      print("file not detected at current URL");
+      return;
+    }
+    globals.coverageButton = createCoverageButton();
+    process(urlMetadata);
+  } catch (e) {
+    Sentry.captureException(e);
+    throw e;
   }
-
-  globals.coverageButton = createCoverageButton();
-
-  process(urlMetadata).catch((e) => {
-    print("unexpected error", e);
-    updateButton("Coverage: ⚠");
-  });
 }
 
-function getMetadataFromURL(): { [key: string]: string } | null {
+function getMetadataFromURL(): FileMetadata | null {
   const regexp =
     /\/(?<owner>.+?)\/(?<repo>.+?)\/blob\/(?<branch>.+?)\/(?<path>.+?)$/;
   const matches = regexp.exec(window.location.pathname);
