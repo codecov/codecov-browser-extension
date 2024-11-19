@@ -1,10 +1,5 @@
-export type FileMetadata = {
-  owner: string;
-  repo: string;
-  path: string;
-  commit: string;
-  branch: string | undefined;
-};
+export type FileMetadata = { [key: string]: string };
+export type PRMetadata = { [key: string]: string };
 
 export enum CoverageStatus {
   COVERED,
