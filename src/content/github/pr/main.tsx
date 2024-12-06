@@ -48,10 +48,10 @@ async function execute() {
 
   const coverageReport = await getPRReport(urlMetadata);
   if (
-    !coverageReport.files ||
-    !coverageReport.totals.base.coverage ||
-    !coverageReport.totals.head.coverage ||
-    !coverageReport.totals.patch.coverage
+    !coverageReport?.files ||
+    !coverageReport?.totals?.base?.coverage ||
+    !coverageReport?.totals?.head?.coverage ||
+    !coverageReport?.totals?.patch?.coverage
   ) {
     showError();
     return;
