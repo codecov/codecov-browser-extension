@@ -67,7 +67,7 @@ async function main(): Promise<void> {
       return;
     }
     globals.coverageButton = createCoverageButton();
-    process(urlMetadata);
+    await process(urlMetadata);
   } catch (e) {
     Sentry.captureException(e);
     throw e;

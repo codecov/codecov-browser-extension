@@ -47,7 +47,12 @@ async function execute() {
   createContainer();
 
   const coverageReport = await getPRReport(urlMetadata);
-  if (!coverageReport.files) {
+  if (
+    !coverageReport?.files ||
+    !coverageReport?.totals?.base?.coverage ||
+    !coverageReport?.totals?.head?.coverage ||
+    !coverageReport?.totals?.patch?.coverage
+  ) {
     showError();
     return;
   }
