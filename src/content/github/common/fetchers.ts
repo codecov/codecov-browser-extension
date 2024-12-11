@@ -7,7 +7,6 @@ import {
 
 export async function getFlags(metadata: FileMetadata): Promise<string[]> {
   const payload = {
-    service: "github",
     owner: metadata.owner,
     repo: metadata.repo,
   };
@@ -25,7 +24,6 @@ export async function getFlags(metadata: FileMetadata): Promise<string[]> {
 
 export async function getComponents(metadata: FileMetadata): Promise<string[]> {
   const payload = {
-    service: "github",
     owner: metadata.owner,
     repo: metadata.repo,
   };
@@ -52,7 +50,6 @@ export async function getCommitReport(
   }
 
   const payload = {
-    service: "github",
     owner: metadata.owner,
     repo: metadata.repo,
     path: metadata.path,
@@ -74,7 +71,6 @@ export async function getBranchReport(
   metadata: FileMetadata
 ): Promise<FileCoverageReportResponse> {
   const payload = {
-    service: "github",
     owner: metadata.owner,
     repo: metadata.repo,
     path: metadata.path,
@@ -92,7 +88,6 @@ export async function getBranchReport(
 
 export async function getPRReport(url: any) {
   const payload = {
-    service: "github",
     owner: url.owner,
     repo: url.repo,
     pullid: url.id,
