@@ -14,48 +14,6 @@ import {
 } from "src/constants";
 import { MessageType } from "src/types";
 
-const handleTextChange =
-  (setter: React.Dispatch<React.SetStateAction<any>>) =>
-  (e: React.ChangeEvent<HTMLInputElement>) => {
-    setter(e.target.value);
-  };
-
-interface ApiTokenInputProps {
-  token: string;
-  setToken: (value: string) => void;
-  showError: boolean;
-  isSelfHosted: boolean;
-}
-
-function ApiTokenInput({
-  token,
-  setToken,
-  showError,
-  isSelfHosted,
-}: ApiTokenInputProps) {
-  const errorMessage = isSelfHosted
-    ? "Invalid API token or self-hosted Codecov URL. Make sure your token and self-hosted URL are correct."
-    : "Invalid API token. Make sure your token is correct.";
-
-  return (
-    <div className="flex flex-col">
-      <label>Codecov API token</label>
-      <input
-        type="text"
-        placeholder="1a2bc3de-f45g-6hi7-8j90-12k3l45mn678"
-        value={token}
-        onChange={handleTextChange(setToken)}
-        className={clsx({
-          "border-red-500": showError,
-        })}
-      />
-      {showError ? (
-        <p className="text-red-500 text-sm p-1">{errorMessage}</p>
-      ) : null}
-    </div>
-  );
-}
-
 interface ToggleUrlInputProps {
   showInputLabel: string;
   showInput: boolean;
@@ -77,7 +35,6 @@ function ToggleUrlInput({
   url,
   setUrl,
   errorMessage,
-  showError,
 }: ToggleUrlInputProps) {
   const handleToggle = () => {
     setShowInput(!showInput);
@@ -111,18 +68,18 @@ function ToggleUrlInput({
           />
         </div>
         {showInput ? (
-          <div className="flex flex-col p-2">
+          <div className="flex flex-col px-2 pb-2">
             <label>{urlInputLabel}</label>
             <input
               type="text"
               placeholder={urlInputPlaceholder}
               value={url}
-              onChange={handleTextChange(setUrl)}
+              onChange={(e) => setUrl(e.target.value)}
               className={clsx({
-                "border-red-500": showError,
+                "border-red-500": errorMessage,
               })}
             />
-            {showError && errorMessage ? (
+            {errorMessage ? (
               <p className="text-red-500 text-sm p-1">{errorMessage}</p>
             ) : null}
           </div>
@@ -133,36 +90,20 @@ function ToggleUrlInput({
 }
 
 function Popup() {
-  // persisted state
   const [codecovApiToken, setCodecovApiToken] = useState("");
   const [useSelfHosted, setUseSelfHosted] = useState(false);
   const [codecovUrl, setCodecovUrl] = useState("");
   const [useGithubEnterprise, setUseGithubEnterprise] = useState(false);
   const [githubUrl, setGitHubUrl] = useState("");
 
-  // ephemeral state
-  const [isUrlPermissionGranted, setIsUrlPermissionGranted] = useState(false);
-  const [isUrlError, setIsUrlError] = useState(false);
-  const [isTokenError, setIsTokenError] = useState(false);
-  const [isTabError, setIsTabError] = useState(false);
-  const [isUnregisterTabError, setIsUnregisterTabError] = useState(false);
+  const [apiTokenError, setApiTokenError] = useState("");
+  const [codecovUrlError, setCodecovUrlError] = useState("");
+  const [githubUrlError, setGithubUrlError] = useState("");
   const [hasChanges, setHasChanges] = useState(false);
-  const [isLoadingStorage, setIsLoadingStorage] = useState(true);
-  const [isDone, setIsDone] = useState(false);
-
-  const isFormInvalid =
-    useSelfHosted &&
-    !(codecovUrl && codecovApiToken && githubUrl && isUrlPermissionGranted);
-  const isError =
-    isUrlError || isTokenError || isTabError || isUnregisterTabError;
 
   useEffect(() => {
     loadPersistedState();
   }, []);
-
-  useEffect(() => {
-    resetEphemeralState();
-  }, [codecovUrl, githubUrl, codecovApiToken]);
 
   const withDetectChanges = (setter: (value: string) => void) => {
     return (value: string) => {
@@ -196,44 +137,20 @@ function Popup() {
       });
   };
 
-  const resetEphemeralState = () => {
-    setIsUrlPermissionGranted(false);
-    setIsUrlError(false);
-    setIsTokenError(false);
-    setIsTabError(false);
-    setIsUnregisterTabError(false);
-    setIsDone(false);
-  };
-
-  const registerContentScripts = async (url: string) => {
-    const payload = {
-      url,
-    };
-
-    return browser.runtime.sendMessage({
-      type: MessageType.REGISTER_CONTENT_SCRIPTS,
-      payload,
-    });
-  };
-
-  const unregisterContentScripts = async () => {
-    const payload = {};
-
-    return browser.runtime.sendMessage({
-      type: MessageType.UNREGISTER_CONTENT_SCRIPTS,
-      payload,
-    });
-  };
-
   const handleSave = async () => {
-    console.log("handleSave");
-
     if (useSelfHosted) {
       console.log("useSelfHosted request host permission");
       const urlMatch = urlJoin(codecovUrl, "/*");
       await browser.permissions.request({
         origins: [urlMatch],
       });
+    }
+
+    if (codecovApiToken && !isValidTokenFormat(codecovApiToken)) {
+      setApiTokenError(
+        "Invalid token format. Token should be a 32 hex digit UUID. See this input's placeholder value for en example."
+      );
+      return;
     }
 
     try {
@@ -254,29 +171,38 @@ function Popup() {
       console.log("isAuthOk", isAuthOk);
 
       if (!isAuthOk) {
-        console.log("setIsTokenError");
-        setIsTokenError(true);
+        setApiTokenError(
+          "API token authentication failed. Make sure your token is correct."
+        );
+        if (useSelfHosted) {
+          setCodecovUrlError(
+            "API token authentication failed. Make sure your self-hosted URL is correct."
+          );
+        }
         return;
       }
+      setApiTokenError("");
+      setCodecovUrlError("");
     } catch (error) {
-      console.log("setIsUrlError");
-      setIsUrlError(true);
+      setCodecovUrlError(
+        "Invalid URL. Make sure your self-hosted URL is correct."
+      );
       return;
     }
 
     if (useGithubEnterprise) {
-      console.log("useGithubEnterprise");
       const isScriptRegistered = await registerContentScripts(githubUrl);
-      console.log("isScriptRegistered", isScriptRegistered);
       if (!isScriptRegistered) {
-        console.log("setIsTabError");
-        setIsTabError(true);
+        setGithubUrlError(
+          "This URL must be loaded in the active tab when you press Save."
+        );
         return;
       }
     } else {
       console.log("not useGithubEnterprise");
       await unregisterContentScripts();
     }
+    setGithubUrlError("");
 
     console.log("storage set", {
       codecovApiToken,
@@ -289,11 +215,7 @@ function Popup() {
       [selfHostedGitHubURLStorageKey]: githubUrl,
     });
 
-    console.log("done storage set, resetting ephemeral state and setting done");
-
-    resetEphemeralState();
     setHasChanges(false);
-    setIsDone(true);
   };
 
   return (
@@ -308,36 +230,46 @@ function Popup() {
           Save
         </button>
       </div>
-      <div className="px-6 py-2 flex flex-col gap-6">
-        <ApiTokenInput
-          token={codecovApiToken}
-          setToken={withDetectChanges(setCodecovApiToken)}
-          showError={isTokenError || isUrlError}
-          isSelfHosted={useSelfHosted}
-        />
+      <div className="px-6 py-2 flex flex-col gap-4">
+        <div className="flex flex-col">
+          <label>Codecov API token</label>
+          <input
+            type="text"
+            placeholder="1a2bc3de-f45g-6hi7-8j90-12k3l45mn678"
+            value={codecovApiToken}
+            onChange={(e) =>
+              withDetectChanges(setCodecovApiToken)(e.target.value)
+            }
+            className={clsx({
+              "border-red-500": apiTokenError,
+            })}
+          />
+          {apiTokenError ? (
+            <p className="text-red-500 text-sm p-1">{apiTokenError}</p>
+          ) : null}
+        </div>
         <ToggleUrlInput
           showInputLabel="Using self-hosted Codecov?"
           showInput={useSelfHosted}
           setShowInput={setUseSelfHosted}
           urlInputLabel="Self-hosted Codecov URL"
-          urlInputPlaceholder="https://codecov.example.com"
+          urlInputPlaceholder="https://codecov.your-company.com"
           url={codecovUrl}
           setUrl={withDetectChanges(setCodecovUrl)}
-          showError={isTokenError || isUrlError}
+          errorMessage={codecovUrlError}
         />
         <ToggleUrlInput
           showInputLabel="Using GitHub Enterprise?"
           showInput={useGithubEnterprise}
           setShowInput={setUseGithubEnterprise}
           urlInputLabel="GitHub Enterprise URL"
-          urlInputPlaceholder="https://github.example.com"
+          urlInputPlaceholder="https://github.your-company.com"
           url={githubUrl}
           setUrl={withDetectChanges(setGitHubUrl)}
-          errorMessage="This URL must be loaded in the active tab when you press Save."
-          showError={isTabError}
+          errorMessage={githubUrlError}
         />
       </div>
-      <div className="px-6 pt-2 pb-4 text-sm">
+      <div className="px-6 pb-2 text-sm">
         Issues and feedback are welcome on{" "}
         <a
           href="https://github.com/codecov/codecov-browser-extension/issues"
@@ -366,6 +298,30 @@ const CodecovLogo = () => (
     />
   </svg>
 );
+
+const registerContentScripts = async (url: string) => {
+  const payload = {
+    url,
+  };
+
+  return browser.runtime.sendMessage({
+    type: MessageType.REGISTER_CONTENT_SCRIPTS,
+    payload,
+  });
+};
+
+const unregisterContentScripts = async () => {
+  const payload = {};
+
+  return browser.runtime.sendMessage({
+    type: MessageType.UNREGISTER_CONTENT_SCRIPTS,
+    payload,
+  });
+};
+
+const isValidTokenFormat = (token: string) => {
+  return /^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$/.test(token);
+};
 
 createRoot(document.getElementById("app")!).render(
   <>
