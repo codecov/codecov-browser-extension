@@ -139,7 +139,6 @@ function Popup() {
 
   const handleSave = async () => {
     if (useSelfHosted) {
-      console.log("useSelfHosted request host permission");
       const urlMatch = urlJoin(codecovUrl, "/*");
       await browser.permissions.request({
         origins: [urlMatch],
@@ -161,14 +160,11 @@ function Popup() {
           ? providers.githubEnterprise
           : providers.github,
       };
-      console.log("payload", payload);
 
       const isAuthOk = await browser.runtime.sendMessage({
         type: MessageType.CHECK_AUTH,
         payload,
       });
-
-      console.log("isAuthOk", isAuthOk);
 
       if (!isAuthOk) {
         setApiTokenError(
@@ -199,16 +195,10 @@ function Popup() {
         return;
       }
     } else {
-      console.log("not useGithubEnterprise");
       await unregisterContentScripts();
     }
     setGithubUrlError("");
 
-    console.log("storage set", {
-      codecovApiToken,
-      codecovUrl,
-      githubUrl,
-    });
     await browser.storage.sync.set({
       [codecovApiTokenStorageKey]: codecovApiToken,
       [selfHostedCodecovURLStorageKey]: codecovUrl,
