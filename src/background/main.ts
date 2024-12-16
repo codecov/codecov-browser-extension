@@ -32,18 +32,19 @@ async function handleMessages(message: {
   payload: any;
   referrer?: string;
 }) {
+  const codecov = new Codecov();
   return Sentry.startSpan({ name: message.type }, async () => {
     switch (message.type) {
       case MessageType.FETCH_COMMIT_REPORT:
-        return Codecov.fetchCommitReport(message.payload, message.referrer!);
+        return codecov.fetchCommitReport(message.payload, message.referrer!);
       case MessageType.FETCH_PR_COMPARISON:
-        return Codecov.fetchPRComparison(message.payload, message.referrer!);
+        return codecov.fetchPRComparison(message.payload, message.referrer!);
       case MessageType.FETCH_FLAGS_LIST:
-        return Codecov.listFlags(message.payload, message.referrer!);
+        return codecov.listFlags(message.payload, message.referrer!);
       case MessageType.FETCH_COMPONENTS_LIST:
-        return Codecov.listComponents(message.payload, message.referrer!);
+        return codecov.listComponents(message.payload, message.referrer!);
       case MessageType.CHECK_AUTH:
-        return Codecov.checkAuth(message.payload);
+        return codecov.checkAuth(message.payload);
       case MessageType.REGISTER_CONTENT_SCRIPTS:
         return registerContentScript(message.payload);
       case MessageType.UNREGISTER_CONTENT_SCRIPTS:

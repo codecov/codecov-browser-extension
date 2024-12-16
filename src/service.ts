@@ -1,85 +1,94 @@
 import _ from "lodash";
-import fetchIntercept from "fetch-intercept";
 import browser from "webextension-polyfill";
 import urlJoin from "url-join";
 
 import {
-  selfHostedCodecovApiToken,
+  codecovCloudApiUrl,
+  codecovApiTokenStorageKey,
   selfHostedCodecovURLStorageKey,
   selfHostedGitHubURLStorageKey,
-  useSelfHostedStorageKey,
+  providers,
 } from "src/constants";
 
 export class Codecov {
-  static baseUrl = "https://api.codecov.io";
-  static checkAuthPath = "/api/v2/github/";
+  apiToken: string = "";
+  apiUrl: string = codecovCloudApiUrl;
+  provider: typeof providers[keyof typeof providers] = providers.github;
 
-  static _init() {
-    fetchIntercept.register({
-      request: async (requestUrl: string, requestConfig: any) => {
-        // use request params for auth check
-        if (new URL(requestUrl).pathname === this.checkAuthPath) {
-          return [requestUrl, requestConfig];
-        }
-        const result = await browser.storage.sync.get([
-          useSelfHostedStorageKey,
-          selfHostedCodecovURLStorageKey,
-          selfHostedGitHubURLStorageKey,
-          selfHostedCodecovApiToken,
-        ]);
+  private async init() {
+    const result = await browser.storage.sync.get([
+      codecovApiTokenStorageKey,
+      selfHostedCodecovURLStorageKey,
+      selfHostedGitHubURLStorageKey,
+    ]);
 
-        const useSelfHosted = result[useSelfHostedStorageKey] || false;
-        // self hosted not selected
-        if (!useSelfHosted) {
-          return [requestUrl, requestConfig];
-        }
-        const currentURL = new URL(requestConfig?.headers?.Referrer);
-        const selfHostedGitHubURL = new URL(
-          result[selfHostedGitHubURLStorageKey]
-        );
-        // not on self hosted github
-        if (currentURL.hostname !== selfHostedGitHubURL.hostname) {
-          return [requestUrl, requestConfig];
-        }
-        const codecovUrl = result[selfHostedCodecovURLStorageKey];
-        const codecovApiToken = result[selfHostedCodecovApiToken];
-        // update url
-        const updatedRequestUrl = urlJoin(
-          codecovUrl,
-          requestUrl.replace(this.baseUrl, "")
-        );
-        // update auth header
-        const updatedRequestConfig = _.merge(requestConfig, {
-          headers: {
-            Authorization: `bearer ${codecovApiToken}`,
-          },
-        });
-        return [updatedRequestUrl, updatedRequestConfig];
-      },
-    });
+    const apiToken: string | undefined = result[codecovApiTokenStorageKey];
+    if (apiToken) {
+      this.apiToken = apiToken;
+    }
+
+    const selfHostedCodecovURL: string | undefined =
+      result[selfHostedCodecovURLStorageKey];
+    if (selfHostedCodecovURL) {
+      this.apiUrl = selfHostedCodecovURL;
+    }
+
+    const selfHostedGithubURL: string | undefined =
+      result[selfHostedGitHubURLStorageKey];
+    if (selfHostedGithubURL) {
+      this.provider = providers.githubEnterprise;
+    }
   }
 
-  static async checkAuth(payload: any): Promise<boolean> {
-    const { baseUrl, token } = payload;
+  async fetch(input: RequestInfo, init?: RequestInit): Promise<Response> {
+    // fetch wrapper that adds API token auth if necessary
 
-    const url = urlJoin(baseUrl, this.checkAuthPath);
+    if (this.apiToken) {
+      console.log("using api token");
+      return fetch(input, {
+        ...init,
+        headers: {
+          Authorization: `Bearer ${this.apiToken}`,
+          ...init?.headers,
+        },
+      });
+    }
 
-    const response = await fetch(url, {
-      headers: {
-        Authorization: `bearer ${token}`,
-      },
-    });
+    console.log("using session cookie");
 
+    return fetch(input, init);
+  }
+
+  async checkAuth(payload: any): Promise<boolean> {
+    // This is for testing config on save, so don't use storage values
+    const { baseUrl, token, provider } = payload;
+
+    const url = urlJoin(baseUrl, "/api/v2/", provider, "/");
+
+    // Don't use this.fetch for checkAuth as we don't want any old token to
+    // sneak into this request.
+
+    if (token) {
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Referrer: "https://github.com/codecov/codecov-api",
+        },
+      });
+      return response.ok;
+    }
+
+    const response = await fetch(url);
     return response.ok;
   }
 
-  static async fetchCommitReport(payload: any, referrer: string): Promise<any> {
-    const { service, owner, repo, sha, branch, path, flag, component_id } =
-      payload;
+  async fetchCommitReport(payload: any, referrer: string): Promise<any> {
+    await this.init();
+    const { owner, repo, sha, branch, path, flag, component_id } = payload;
 
     const url = new URL(
-      `/api/v2/${service}/${owner}/repos/${repo}/report`,
-      this.baseUrl
+      `/api/v2/${this.provider}/${owner}/repos/${repo}/report`,
+      this.apiUrl
     );
 
     const params = { path };
@@ -91,7 +100,7 @@ export class Codecov {
       )
     ).toString();
 
-    const response = await fetch(url.toString(), {
+    const response = await this.fetch(url.toString(), {
       headers: {
         Referrer: referrer,
       },
@@ -104,17 +113,18 @@ export class Codecov {
     };
   }
 
-  static async fetchPRComparison(payload: any, referrer: string): Promise<any> {
-    const { service, owner, repo, pullid } = payload;
+  async fetchPRComparison(payload: any, referrer: string): Promise<any> {
+    await this.init();
+    const { owner, repo, pullid } = payload;
 
     const url = new URL(
-      `/api/v2/${service}/${owner}/repos/${repo}/compare`,
-      this.baseUrl
+      `/api/v2/${this.provider}/${owner}/repos/${repo}/compare`,
+      this.apiUrl
     );
     const params = { pullid };
     url.search = new URLSearchParams(params).toString();
 
-    const response = await fetch(url.toString(), {
+    const response = await this.fetch(url.toString(), {
       headers: {
         Referrer: referrer,
       },
@@ -127,15 +137,16 @@ export class Codecov {
     };
   }
 
-  static async listFlags(payload: any, referrer: string): Promise<any> {
-    const { service, owner, repo } = payload;
+  async listFlags(payload: any, referrer: string): Promise<any> {
+    await this.init();
+    const { owner, repo } = payload;
 
     const url = new URL(
-      `/api/v2/${service}/${owner}/repos/${repo}/flags`,
-      this.baseUrl
+      `/api/v2/${this.provider}/${owner}/repos/${repo}/flags`,
+      this.apiUrl
     );
 
-    const response = await fetch(url.toString(), {
+    const response = await this.fetch(url.toString(), {
       headers: {
         Referrer: referrer,
       },
@@ -148,15 +159,16 @@ export class Codecov {
     };
   }
 
-  static async listComponents(payload: any, referrer: string): Promise<any> {
-    const { service, owner, repo } = payload;
+  async listComponents(payload: any, referrer: string): Promise<any> {
+    await this.init();
+    const { owner, repo } = payload;
 
     const url = new URL(
-      `/api/v2/${service}/${owner}/repos/${repo}/components`,
-      this.baseUrl
+      `/api/v2/${this.provider}/${owner}/repos/${repo}/components`,
+      this.apiUrl
     );
 
-    const response = await fetch(url.toString(), {
+    const response = await this.fetch(url.toString(), {
       headers: {
         Referrer: referrer,
       },
@@ -169,5 +181,3 @@ export class Codecov {
     };
   }
 }
-
-Codecov._init();
