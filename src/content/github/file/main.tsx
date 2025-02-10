@@ -33,7 +33,6 @@ import {
 } from "../common/fetchers";
 import { print } from "src/utils";
 import Sentry from "../../common/sentry";
-import { isFileUrl } from "../common/utils";
 
 const globals: {
   coverageReport?: FileCoverageReport;
@@ -375,6 +374,7 @@ function clearElements() {
 
 function clearAnimationAndAnnotations() {
   clearAnimation(lineSelector, annotateLine);
+  clearAnimation(noVirtLineSelector, annotateLine);
   clearAnnotations((line: HTMLElement) => {
     line.style.backgroundColor = "inherit";
   });
