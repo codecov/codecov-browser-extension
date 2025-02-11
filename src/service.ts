@@ -1,4 +1,4 @@
-import _ from "lodash";
+import _, { remove } from "lodash";
 import browser from "webextension-polyfill";
 import urlJoin from "url-join";
 
@@ -8,6 +8,7 @@ import {
   selfHostedCodecovURLStorageKey,
   selfHostedGitHubURLStorageKey,
   providers,
+  cacheTtlMs,
 } from "src/constants";
 
 export class Codecov {
@@ -137,9 +138,64 @@ export class Codecov {
     };
   }
 
+  async getCached(
+    type: "flags" | "components",
+    owner: string,
+    repo: string
+  ): Promise<any> {
+    const cacheKey = `${owner}/${repo}/${type}`;
+    const cacheExpiryKey = `${owner}/${repo}/${type}/expiry`;
+
+    const storage = await browser.storage.local.get([cacheKey, cacheExpiryKey]);
+
+    if (!storage[cacheKey] || !storage[cacheExpiryKey]) {
+      // Cache is not set
+      return null;
+    }
+
+    const value = JSON.parse(storage[cacheKey]);
+    const expiry = storage[cacheExpiryKey];
+
+    if (Date.now() <= expiry) {
+      // Cache is valid, return cached value
+      return value;
+    }
+
+    // Cache is expired, clear cache
+    await browser.storage.local.remove([cacheKey, cacheExpiryKey]);
+
+    return null;
+  }
+
+  async setCached(
+    type: "flags" | "components",
+    owner: string,
+    repo: string,
+    data: any
+  ): Promise<void> {
+    const cacheKey = `${owner}/${repo}/${type}`;
+    const cacheExpiryKey = `${owner}/${repo}/${type}/expiry`;
+
+    await browser.storage.local.set({
+      [cacheKey]: JSON.stringify(data),
+      [cacheExpiryKey]: Date.now() + cacheTtlMs,
+    });
+
+    return;
+  }
+
   async listFlags(payload: any, referrer: string): Promise<any> {
     await this.init();
     const { owner, repo } = payload;
+
+    const cachedFlags = await this.getCached("flags", owner, repo);
+
+    if (cachedFlags != null) {
+      return {
+        ok: true,
+        data: cachedFlags,
+      };
+    }
 
     const url = new URL(
       `/api/v2/${this.provider}/${owner}/repos/${repo}/flags`,
@@ -153,6 +209,8 @@ export class Codecov {
     });
     const data = await response.json();
 
+    await this.setCached("flags", owner, repo, data);
+
     return {
       ok: response.ok,
       data,
@@ -162,6 +220,15 @@ export class Codecov {
   async listComponents(payload: any, referrer: string): Promise<any> {
     await this.init();
     const { owner, repo } = payload;
+
+    const cachedComponents = await this.getCached("components", owner, repo);
+
+    if (cachedComponents != null) {
+      return {
+        ok: true,
+        data: cachedComponents,
+      };
+    }
 
     const url = new URL(
       `/api/v2/${this.provider}/${owner}/repos/${repo}/components`,
@@ -174,6 +241,8 @@ export class Codecov {
       },
     });
     const data = await response.json();
+
+    await this.setCached("components", owner, repo, data);
 
     return {
       ok: response.ok,
