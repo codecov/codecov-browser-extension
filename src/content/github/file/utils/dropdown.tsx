@@ -17,29 +17,12 @@ export async function createDropdown({
   previousElement: HTMLElement;
   selectedOptions: string[];
 }) {
-  // Build the button out of the Raw/copy/download button group
-  const rawButton = document
-    .querySelector('[data-testid="download-raw-button"]')!
-    .closest("div");
-  if (!rawButton) throw new Error("Could not find raw button group");
+  const rawButton = document.querySelector('[data-testid="raw-button"]');
+  if (!rawButton) {
+    throw new Error("Raw button not found");
+  }
   const dropdownButton = rawButton.cloneNode(true) as HTMLElement;
-  // Remove copy button
-  const copyButton = dropdownButton.querySelector(
-    '[data-testid="copy-raw-button"]'
-  );
-  if (!copyButton) throw new Error("Could not find copy button");
-  dropdownButton.removeChild(copyButton);
-  // Replace download button with dropdown button
-  const downloadButton = dropdownButton.querySelector(
-    '[data-testid="download-raw-button"]'
-  );
-  if (!downloadButton || !downloadButton.firstChild)
-    throw new Error("Could not find download button or it is missing children");
-  const triangleDownSvg = document.querySelector(".octicon-triangle-down");
-  if (!triangleDownSvg) throw new Error("Could not find triangle down svg");
-  downloadButton.replaceChild(triangleDownSvg, downloadButton.firstChild);
-
-  const textNode = dropdownButton.querySelector('[data-testid="raw-button"]');
+  const textNode = dropdownButton.querySelector('[data-component="text"]');
   if (!textNode || !textNode.parentElement)
     throw new Error("Could not find textNode");
   textNode.innerHTML = "";

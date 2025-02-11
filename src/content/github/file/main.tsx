@@ -298,7 +298,7 @@ function createCoverageButton() {
   });
   const textNode = codecovButton.querySelector('[data-component="text"]')!;
   textNode.innerHTML = "Coverage: ...";
-  rawButton.parentNode?.parentNode?.prepend(codecovButton);
+  rawButton.parentNode?.parentNode?.parentNode?.prepend(codecovButton);
   return codecovButton;
 }
 
