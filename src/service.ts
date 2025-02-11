@@ -1,4 +1,4 @@
-import _, { remove } from "lodash";
+import _ from "lodash";
 import browser from "webextension-polyfill";
 import urlJoin from "url-join";
 
