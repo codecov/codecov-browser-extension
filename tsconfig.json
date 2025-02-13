@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "strict": true,
-    "module": "commonjs",
+    "module": "es6",
     "target": "es6",
     "esModuleInterop": true,
     "sourceMap": false,
@@ -15,6 +15,7 @@
     "outDir": "dist/js",
     "noEmitOnError": true,
     "jsx": "react",
-    "typeRoots": ["node_modules/@types"]
+    "typeRoots": ["node_modules/@types"],
+    "moduleResolution": "node"
   }
 }
