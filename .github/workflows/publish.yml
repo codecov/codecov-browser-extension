@@ -1,7 +1,12 @@
 name: publish
+
+permissions:
+  id-token: write
+
 on:
   release:
     types: [published]
+
 jobs:
   publish:
     runs-on: ubuntu-latest

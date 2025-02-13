@@ -1,5 +1,10 @@
 name: ci
+
+permissions:
+  id-token: write
+
 on: push
+
 jobs:
   ci:
     runs-on: ubuntu-latest
