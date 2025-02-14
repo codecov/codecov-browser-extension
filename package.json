@@ -51,5 +51,8 @@
     "webpack": "^5.76.0",
     "webpack-cli": "^4.0.0",
     "webpack-merge": "^5.0.0"
+  },
+  "volta": {
+    "node": "22.14.0"
   }
 }
