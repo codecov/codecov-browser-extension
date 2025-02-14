@@ -1,5 +1,4 @@
 import browser from "webextension-polyfill";
-import alpha from "color-alpha";
 import Drop from "tether-drop";
 import _ from "lodash";
 import "tether-drop/dist/css/drop-theme-arrows.css";
@@ -353,11 +352,11 @@ function annotateLine(line: HTMLElement) {
   }
   const status = globals.coverageReport[lineNumber];
   if (status === CoverageStatus.COVERED) {
-    line.style.backgroundColor = alpha(colors.green, 0.25);
+    line.style.backgroundColor = colors.greenAlpha;
   } else if (status === CoverageStatus.UNCOVERED) {
-    line.style.backgroundColor = alpha(colors.red, 0.25);
+    line.style.backgroundColor = colors.redAlpha;
   } else if (status === CoverageStatus.PARTIAL) {
-    line.style.backgroundColor = alpha(colors.yellow, 0.25);
+    line.style.backgroundColor = colors.yellowAlpha;
   } else {
     line.style.backgroundColor = "inherit";
   }

@@ -1,5 +1,9 @@
 import browser from "webextension-polyfill";
-import * as Sentry from "@sentry/browser";
+import {
+  init as sentryInit,
+  browserTracingIntegration,
+  startSpan,
+} from "@sentry/browser";
 
 import { MessageType } from "src/types";
 import { Codecov } from "src/service";
@@ -11,12 +15,12 @@ import {
 async function main(): Promise<void> {
   browser.runtime.onMessage.addListener(handleMessages);
 
-  Sentry.init({
+  sentryInit({
     // @ts-ignore SENTRY_DSN is populated by Webpack at build time
     dsn: SENTRY_DSN,
 
     integrations: [
-      Sentry.browserTracingIntegration({
+      browserTracingIntegration({
         // disable automatic span creation
         instrumentNavigation: false,
         instrumentPageLoad: false,
@@ -33,7 +37,7 @@ async function handleMessages(message: {
   referrer?: string;
 }) {
   const codecov = new Codecov();
-  return Sentry.startSpan({ name: message.type }, async () => {
+  return startSpan({ name: message.type }, async () => {
     switch (message.type) {
       case MessageType.FETCH_COMMIT_REPORT:
         return codecov.fetchCommitReport(message.payload, message.referrer!);
