@@ -12,5 +12,5 @@ export const colors = {
   yellowAlpha: "rgba(244,176,27,0.25)",
   red: "rgb(245,32,32)",
   green: "rgb(33,181,119)",
-  yellow: "rgba(244,176,27)",
+  yellow: "rgb(244,176,27)",
 };
