@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "strict": true,
-    "module": "es6",
-    "target": "es6",
+    "module": "esnext",
+    "target": "esnext",
     "esModuleInterop": true,
     "sourceMap": false,
     "baseUrl": "./",
@@ -16,6 +16,6 @@
     "noEmitOnError": true,
     "jsx": "react",
     "typeRoots": ["node_modules/@types"],
-    "moduleResolution": "node"
+    "moduleResolution": "bundler"
   }
 }
