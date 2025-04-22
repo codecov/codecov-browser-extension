@@ -90,7 +90,7 @@ Firefox
 ```sh
 $ npm install
 $ npm run build
-$ cp dist/manifest.firefox.json dist/manifest.json
+$ mv dist/manifest.firefox.json dist/manifest.json
 ```
 
 ## About Codecov
