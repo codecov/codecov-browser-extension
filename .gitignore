@@ -3,3 +3,4 @@ node_modules/
 dist/
 tmp/
 .vscode/
+codecov-browser-extension.tar.gz

@@ -7,7 +7,8 @@
     "watch": "webpack --config webpack/webpack.dev.js --watch",
     "build": "webpack --config webpack/webpack.prod.js",
     "build.firefox": "npm run build && mv dist/manifest.firefox.json dist/manifest.json",
-    "lint": "prettier --write \"src/**/*.{ts,tsx}\""
+    "lint": "prettier --write \"src/**/*.{ts,tsx}\"",
+    "archive": "tar -czvf codecov-browser-extension.tar.gz --exclude node_modules ./*"
   },
   "author": "",
   "license": "UNLICENSED",

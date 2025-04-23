@@ -75,8 +75,7 @@ As of today, GitHub will show you the old UI if not logged in (running in a temp
 
 These steps will build the extension in the `dist/` folder.
 
-MacOS 13.3.1 (22E261)  
-NodeJS version 19.8.1
+Node 22 and npm 10
 
 Chrome
 
@@ -90,7 +89,7 @@ Firefox
 ```sh
 $ npm install
 $ npm run build
-$ cp dist/manifest.firefox.json dist/manifest.json
+$ mv dist/manifest.firefox.json dist/manifest.json
 ```
 
 ## About Codecov
