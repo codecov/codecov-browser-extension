@@ -1,6 +1,6 @@
 # Codecov Browser Extension for GitHub
 
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fcodecov%2Fcodecov-browser-extension.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fcodecov%2Fcodecov-browser-extension?ref=badge_shield)
+[![FOSSA Status](https://app.fossa.com/api/projects/custom%2B29430%2Fgithub.com%2Fcodecov%2Fcodecov-browser-extension.svg?type=shield&issueType=license)](https://app.fossa.com/projects/custom%2B29430%2Fgithub.com%2Fcodecov%2Fcodecov-browser-extension?ref=badge_shield&issueType=license)
 
 [![Chrome Web Store](https://img.shields.io/chrome-web-store/v/gedikamndpbemklijjkncpnolildpbgo)](https://chrome.google.com/webstore/detail/codecov/gedikamndpbemklijjkncpnolildpbgo)
 ![Chrome Web Store](https://img.shields.io/chrome-web-store/users/gedikamndpbemklijjkncpnolildpbgo)
