@@ -5,24 +5,8 @@ import {
   MessageType,
 } from "src/types";
 
-export async function getMetadata(url: string): Promise<FileMetadata> {
-  const response = await fetch(url).then((response) => response.json());
-  let branch = undefined;
-  if (response.payload.refInfo.refType === "branch") {
-    branch = response.payload.refInfo.name;
-  }
-  return {
-    owner: response.payload.repo.ownerLogin,
-    repo: response.payload.repo.name,
-    path: response.payload.path,
-    commit: response.payload.refInfo.currentOid,
-    branch: branch,
-  };
-}
-
 export async function getFlags(metadata: FileMetadata): Promise<string[]> {
   const payload = {
-    service: "github",
     owner: metadata.owner,
     repo: metadata.repo,
   };
@@ -40,7 +24,6 @@ export async function getFlags(metadata: FileMetadata): Promise<string[]> {
 
 export async function getComponents(metadata: FileMetadata): Promise<string[]> {
   const payload = {
-    service: "github",
     owner: metadata.owner,
     repo: metadata.repo,
   };
@@ -61,8 +44,12 @@ export async function getCommitReport(
   flag: string | undefined,
   component_id: string | undefined
 ): Promise<FileCoverageReportResponse> {
+  // metadata.commit must be defined, check it before calling
+  if (!metadata.commit) {
+    throw new Error("getCommitReport called without commit sha");
+  }
+
   const payload = {
-    service: "github",
     owner: metadata.owner,
     repo: metadata.repo,
     path: metadata.path,
@@ -84,7 +71,6 @@ export async function getBranchReport(
   metadata: FileMetadata
 ): Promise<FileCoverageReportResponse> {
   const payload = {
-    service: "github",
     owner: metadata.owner,
     repo: metadata.repo,
     path: metadata.path,
@@ -102,7 +88,6 @@ export async function getBranchReport(
 
 export async function getPRReport(url: any) {
   const payload = {
-    service: "github",
     owner: url.owner,
     repo: url.repo,
     pullid: url.id,

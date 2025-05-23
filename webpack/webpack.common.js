@@ -1,5 +1,5 @@
 const path = require("path");
-const { ProvidePlugin } = require("webpack");
+const { ProvidePlugin, DefinePlugin } = require("webpack");
 const CopyPlugin = require("copy-webpack-plugin");
 const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const srcDir = path.join(__dirname, "..", "src");
@@ -48,6 +48,9 @@ module.exports = {
     }),
     new ProvidePlugin({
       browser: "webextensions-polyfill",
+    }),
+    new DefinePlugin({
+      SENTRY_DSN: JSON.stringify(process.env.SENTRY_DSN),
     }),
   ],
 };

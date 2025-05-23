@@ -1,38 +1,18 @@
 name: ci
-on:
-  release:
-    types: [published]
+
+permissions:
+  id-token: write
+
+on: push
+
 jobs:
-  publish:
+  ci:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: '18.x'
+          node-version: "22"
       - run: npm ci
-      - run: npm run build
-      - run: |
-          jq --arg version "$VERSION" '.version=$version' dist/manifest.json > manifest.tmp.json \
-            && mv manifest.tmp.json dist/manifest.json
-          jq --arg version "$VERSION" '.version=$version' dist/manifest.firefox.json > manifest.tmp.json \
-            && mv manifest.tmp.json dist/manifest.firefox.json
-        env:
-          VERSION: ${{ github.event.release.tag_name }}
-      - run: |
-          cp -r dist dist-firefox
-          cp dist-firefox/manifest.firefox.json dist-firefox/manifest.json
-      - name: Publish to Chrome
-        working-directory: dist
-        run: npx chrome-webstore-upload-cli@2 upload --auto-publish
-        env:
-          EXTENSION_ID: "gedikamndpbemklijjkncpnolildpbgo"
-          CLIENT_ID: ${{ secrets.GOOGLE_WEB_STORE_CLIENT_ID }}
-          CLIENT_SECRET: ${{ secrets.GOOGLE_WEB_STORE_CLIENT_SECRET }}
-          REFRESH_TOKEN: ${{ secrets.GOOGLE_WEB_STORE_REFRESH_TOKEN }}
-      - name: Publish to Firefox
-        working-directory: dist-firefox
-        run: npx web-ext-submit@7
-        env:
-          WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_JWT_ISSUER }}
-          WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_JWT_SECRET }}
+      - name: Build extension
+        run: npm run build

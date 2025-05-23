@@ -17,15 +17,17 @@ export async function createDropdown({
   previousElement: HTMLElement;
   selectedOptions: string[];
 }) {
-  const editButton = document
-    .querySelector('[data-testid="more-edit-button"]')!
-    .closest("div")!;
-  const dropdownButton = editButton.cloneNode(true) as HTMLElement;
-  const textNode: HTMLElement = dropdownButton.querySelector('[data-component="IconButton"]')!;
+  const rawButton = document.querySelector('[data-testid="raw-button"]');
+  if (!rawButton) {
+    throw new Error("Raw button not found");
+  }
+  const dropdownButton = rawButton.cloneNode(true) as HTMLElement;
+  const textNode = dropdownButton.querySelector('[data-component="text"]');
+  if (!textNode || !textNode.parentElement)
+    throw new Error("Could not find textNode");
   textNode.innerHTML = "";
   textNode.ariaDisabled = "false";
-  textNode.parentElement!.ariaLabel = tooltip;
-  textNode.style.padding = `0 ${title.length * 5}px`;
+  textNode.parentElement.ariaLabel = tooltip;
   textNode.appendChild(<span>{title}</span>);
   previousElement.insertAdjacentElement("afterend", dropdownButton);
 

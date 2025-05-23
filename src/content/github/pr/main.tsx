@@ -4,7 +4,7 @@ import _ from "lodash";
 
 import "src/basscss.css";
 import { displayChange } from "src/utils";
-import { CoverageStatus, MessageType, PullCoverageReport } from "src/types";
+import { CoverageStatus, PullCoverageReport } from "src/types";
 import {
   animateAndAnnotateLines,
   clearAnimation,
@@ -14,19 +14,31 @@ import { lineSelector } from "./constants";
 import { colors } from "../common/constants";
 import { print } from "src/utils";
 import { getPRReport } from "../common/fetchers";
+import { isPrUrl } from "../common/utils";
+import Sentry from "src/content/common/sentry";
 
 const globals: {
   coverageReport?: PullCoverageReport;
 } = {};
 
 async function main() {
-  document.addEventListener("soft-nav:end", execute);
-
-  await execute();
+  try {
+    document.addEventListener("soft-nav:end", execute);
+    await execute();
+  } catch (e) {
+    Sentry.captureException(e);
+    throw e;
+  }
 }
 
 async function execute() {
+  if (!isPrUrl(document.URL)) {
+    print("PR not detected at current URL");
+    return;
+  }
+
   const urlMetadata = getMetadataFromURL();
+
   if (!urlMetadata) {
     print("PR not detected at current URL");
     return;
@@ -35,7 +47,12 @@ async function execute() {
   createContainer();
 
   const coverageReport = await getPRReport(urlMetadata);
-  if (!coverageReport.files) {
+  if (
+    !coverageReport?.files ||
+    !coverageReport?.totals?.base?.coverage ||
+    !coverageReport?.totals?.head?.coverage ||
+    !coverageReport?.totals?.patch?.coverage
+  ) {
     showError();
     return;
   }
@@ -88,7 +105,7 @@ const handleToggleClick: React.MouseEventHandler = (event) => {
 };
 
 function updateContainer(head: number, patch: number, change: number) {
-  const parent = document.getElementById("coverage-report-data")!;
+  const parent = document.getElementById("coverage-report-data");
 
   const element = (
     <div className="codecov-flex codecov-items-center">
@@ -107,17 +124,17 @@ function updateContainer(head: number, patch: number, change: number) {
     </div>
   );
 
-  parent.replaceChildren(element);
+  parent?.replaceChildren(element);
 }
 
 function showError() {
-  const parent = document.getElementById("coverage-report-data")!;
+  const parent = document.getElementById("coverage-report-data");
 
   const element = (
     <div className="my-auto mr-6">Coverage report not available</div>
   );
 
-  parent.replaceChildren(element);
+  parent?.replaceChildren(element);
 }
 
 function transformReport(filesReport: any) {

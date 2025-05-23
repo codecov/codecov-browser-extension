@@ -1,6 +1,4 @@
-import React from "dom-chef";
 import browser from "webextension-polyfill";
-import alpha from "color-alpha";
 import Drop from "tether-drop";
 import _ from "lodash";
 import "tether-drop/dist/css/drop-theme-arrows.css";
@@ -12,12 +10,12 @@ import {
   FileCoverageReport,
   FileCoverageReportResponse,
   FileMetadata,
-  MessageType,
 } from "src/types";
 import {
   componentsStorageKey,
   flagsStorageKey,
   lineSelector,
+  noVirtLineSelector,
 } from "./utils/constants";
 import {
   animateAndAnnotateLines,
@@ -27,13 +25,13 @@ import {
 import { colors } from "../common/constants";
 import { createDropdown } from "./utils/dropdown";
 import {
-  getMetadata,
   getComponents,
   getCommitReport,
   getFlags,
   getBranchReport,
 } from "../common/fetchers";
 import { print } from "src/utils";
+import Sentry from "../../common/sentry";
 
 const globals: {
   coverageReport?: FileCoverageReport;
@@ -45,7 +43,7 @@ const globals: {
   prompt?: HTMLElement;
 } = {};
 
-init().catch((e) => print("unexpected error", e));
+init();
 
 function init(): Promise<void> {
   // this event discovered by "reverse-engineering GitHub"
@@ -60,21 +58,61 @@ function init(): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  let metadata: FileMetadata;
-
   try {
-    metadata = await getMetadata(document.URL);
+    const urlMetadata = getMetadataFromURL();
+    if (!urlMetadata) {
+      print("file not detected at current URL");
+      return;
+    }
+    globals.coverageButton = createCoverageButton();
+    await process(urlMetadata);
   } catch (e) {
-    print("file not detected at current URL");
-    return;
+    Sentry.captureException(e);
+    throw e;
+  }
+}
+
+function getMetadataFromURL(): FileMetadata | null {
+  const regexp =
+    /\/(?<owner>.+?)\/(?<repo>.+?)\/blob\/(?<branch>.+?)\/(?<path>.+?)$/;
+  const matches = regexp.exec(window.location.pathname);
+  const groups = matches?.groups;
+  if (!groups) {
+    return null;
   }
 
-  globals.coverageButton = createCoverageButton();
+  const branch = groups.branch;
+  const commitMatch = branch.match(/[\da-f]+/);
 
-  process(metadata).catch((e) => {
-    print("unexpected error", e);
-    updateButton("Coverage: ⚠");
-  });
+  // branch could be a commit sha
+  if (
+    commitMatch &&
+    commitMatch[0].length == branch.length &&
+    (groups.branch.length === 40 || branch.length === 7)
+  ) {
+    // branch is actually a commit sha
+    let commit = branch;
+
+    // if it's a short sha, we need to get the full sha
+    if (commit.length === 7) {
+      const commitLink = document.querySelector(
+        `[href^="/${groups.owner}/${groups.repo}/tree/${commit}"]`
+      );
+      if (!commitLink)
+        throw new Error("Could not find commit link from short sha");
+      const longSha = commitLink
+        .getAttribute("href")
+        ?.match(/[\da-f]{40}/)?.[0];
+      if (!longSha) throw new Error("Could not get long sha from commit link");
+      commit = longSha;
+    }
+
+    return {
+      ...groups,
+      commit,
+    };
+  }
+  return groups;
 }
 
 async function process(metadata: FileMetadata): Promise<void> {
@@ -108,20 +146,16 @@ async function process(metadata: FileMetadata): Promise<void> {
       previousElement: globals.coverageButton!,
       selectedOptions: selectedFlags,
       onClick: handleFlagClick,
-    })
-      .then(({ button, list }) => {
-        globals.flagsButton = button;
-        globals.flagsDrop = new Drop({
-          target: button,
-          content: list,
-          classes: "drop-theme-arrows codecov-z1 codecov-bg-white",
-          position: "bottom right",
-          openOn: "click",
-        });
-      })
-      .catch((e) => {
-        print("error while rendering flags dropdown", e);
+    }).then(({ button, list }) => {
+      globals.flagsButton = button;
+      globals.flagsDrop = new Drop({
+        target: button,
+        content: list,
+        classes: "drop-theme-arrows codecov-z1 codecov-bg-white",
+        position: "bottom right",
+        openOn: "click",
       });
+    });
   }
 
   const components = await getComponents(metadata);
@@ -134,7 +168,7 @@ async function process(metadata: FileMetadata): Promise<void> {
       return [];
     });
 
-  // TODO: allow setting selected flags for different files at the same time
+  // TODO: allow setting selected components for different files at the same time
   if (
     selectedComponents.length > 0 &&
     _.intersection(components, selectedComponents).length === 0
@@ -151,43 +185,49 @@ async function process(metadata: FileMetadata): Promise<void> {
       previousElement: globals.coverageButton!,
       onClick: handleComponentClick,
       selectedOptions: selectedComponents,
-    })
-      .then(({ button, list }) => {
-        globals.componentsButton = button;
-        globals.componentsDrop = new Drop({
-          target: button,
-          content: list,
-          classes: "drop-theme-arrows codecov-z1 codecov-bg-white",
-          position: "bottom right",
-          openOn: "click",
-        });
-      })
-      .catch((e) => {
-        print("error while rendering components dropdown", e);
+    }).then(({ button, list }) => {
+      globals.componentsButton = button;
+      globals.componentsDrop = new Drop({
+        target: button,
+        content: list,
+        classes: "drop-theme-arrows codecov-z1 codecov-bg-white",
+        position: "bottom right",
+        openOn: "click",
       });
+    });
   }
+
+  // If commit sha is defined use that, otherwise just branch name
+  const getReportFn = metadata.commit ? getCommitReport : getBranchReport;
 
   let coverageReportResponses: Array<FileCoverageReportResponse>;
   try {
-    if (selectedFlags?.length > 0) {
+    if (selectedFlags?.length > 0 && selectedComponents?.length > 0) {
       coverageReportResponses = await Promise.all(
-        selectedFlags.map((flag) => getCommitReport(metadata, flag, undefined))
+        selectedFlags.flatMap((flag) =>
+          selectedComponents.map((component) =>
+            getReportFn(metadata, flag, component)
+          )
+        )
+      );
+    } else if (selectedFlags?.length > 0) {
+      coverageReportResponses = await Promise.all(
+        selectedFlags.map((flag) => getReportFn(metadata, flag, undefined))
       );
     } else if (selectedComponents?.length > 0) {
       coverageReportResponses = await Promise.all(
         selectedComponents.map((component) =>
-          getCommitReport(metadata, undefined, component)
+          getReportFn(metadata, undefined, component)
         )
       );
     } else {
-      coverageReportResponses = await Promise.all([
-        await getCommitReport(metadata, undefined, undefined),
-      ]);
+      coverageReportResponses = [
+        await getReportFn(metadata, undefined, undefined),
+      ];
     }
   } catch (e) {
-    print("error while fetching coverage report(s)", e as Error);
     updateButton(`Coverage: ⚠`);
-    return;
+    throw e;
   }
 
   const coverageReports = coverageReportResponses.map(
@@ -224,7 +264,6 @@ async function process(metadata: FileMetadata): Promise<void> {
   if (_.isEmpty(coverageReport)) {
     updateButton(`Coverage: N/A`);
     globals.coverageReport = {};
-    await promptPastReport(metadata);
     return;
   }
 
@@ -233,48 +272,13 @@ async function process(metadata: FileMetadata): Promise<void> {
 
   globals.coverageReport = coverageReport;
   animateAndAnnotateLines(lineSelector, annotateLine);
-}
-
-async function promptPastReport(metadata: FileMetadata): Promise<void> {
-  if (!metadata.branch) {
-    return;
-  }
-  const response = await getBranchReport(metadata);
-  const regexp = /app.codecov.io\/github\/.*\/.*\/commit\/(?<commit>.*)\/blob/;
-  const matches = regexp.exec(response.commit_file_url);
-  const commit = matches?.groups?.commit;
-  if (!commit) {
-    print("could not parse commit hash from response for past coverage report");
-    return;
-  }
-  const link = document.URL.replace(
-    `blob/${metadata.branch}`,
-    `blob/${commit}`
-  );
-  globals.prompt = createPrompt(
-    <span>
-      Coverage report not available for branch HEAD (
-      {metadata.commit.substr(0, 7)}), most recent coverage report for this
-      branch available at commit <a href={link}>{commit.substr(0, 7)}</a>
-    </span>
-  );
-}
-
-function createPrompt(child: any) {
-  const ref = document.querySelector('[data-testid="latest-commit"]')
-    ?.parentElement?.parentElement;
-  if (!ref) {
-    print("could not find reference element to render prompt");
-    return;
-  }
-  const prompt = <div className="codecov-mb2 codecov-mx1">{child}</div>;
-  return ref.insertAdjacentElement("afterend", prompt) as HTMLElement;
+  animateAndAnnotateLines(noVirtLineSelector, annotateLine);
 }
 
 function createCoverageButton() {
   const rawButton = document.querySelector('[data-testid="raw-button"]');
   if (!rawButton) {
-    throw "raw button not found";
+    throw new Error("Raw button not found");
   }
   const codecovButton = rawButton.cloneNode(true) as HTMLElement;
   codecovButton.addEventListener("click", (event) => {
@@ -282,6 +286,7 @@ function createCoverageButton() {
     const isInactive = codecovButton.getAttribute("data-inactive");
     if (isInactive == "true") {
       animateAndAnnotateLines(lineSelector, annotateLine);
+      animateAndAnnotateLines(noVirtLineSelector, annotateLine);
       codecovButton.removeAttribute("data-inactive");
       codecovButton.style.opacity = "1";
     } else {
@@ -292,7 +297,7 @@ function createCoverageButton() {
   });
   const textNode = codecovButton.querySelector('[data-component="text"]')!;
   textNode.innerHTML = "Coverage: ...";
-  rawButton.parentNode?.parentNode?.prepend(codecovButton);
+  rawButton.parentNode?.parentNode?.parentNode?.prepend(codecovButton);
   return codecovButton;
 }
 
@@ -332,18 +337,26 @@ function updateButton(text: string) {
 }
 
 function annotateLine(line: HTMLElement) {
-  const lineNumber = parseInt(line.getAttribute("data-key")!) + 1;
+  let lineNumber = _.parseInt(line.getAttribute("data-key")!) + 1;
+  const lineNumberString = line.getAttribute("data-key");
+  if (lineNumberString) {
+    lineNumber = _.parseInt(lineNumberString) + 1; // Virtualized lines have data-key="{number - 1}"
+  } else {
+    const noVirtLineNumberString = line.getAttribute("id");
+    if (!noVirtLineNumberString) return;
+    lineNumber = _.parseInt(noVirtLineNumberString.slice(2)); // Non-virtualized lines have id="LC{number}"
+  }
   // called from "Coverage: N/A" button on-click handler
   if (!globals.coverageReport) {
     return;
   }
   const status = globals.coverageReport[lineNumber];
   if (status === CoverageStatus.COVERED) {
-    line.style.backgroundColor = alpha(colors.green, 0.25);
+    line.style.backgroundColor = colors.greenAlpha;
   } else if (status === CoverageStatus.UNCOVERED) {
-    line.style.backgroundColor = alpha(colors.red, 0.25);
+    line.style.backgroundColor = colors.redAlpha;
   } else if (status === CoverageStatus.PARTIAL) {
-    line.style.backgroundColor = alpha(colors.yellow, 0.25);
+    line.style.backgroundColor = colors.yellowAlpha;
   } else {
     line.style.backgroundColor = "inherit";
   }
@@ -360,6 +373,7 @@ function clearElements() {
 
 function clearAnimationAndAnnotations() {
   clearAnimation(lineSelector, annotateLine);
+  clearAnimation(noVirtLineSelector, annotateLine);
   clearAnnotations((line: HTMLElement) => {
     line.style.backgroundColor = "inherit";
   });

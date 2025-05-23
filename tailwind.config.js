@@ -2,15 +2,11 @@
 module.exports = {
   content: ["./src/**/*.tsx"],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        "codecov-pink": "rgb(240, 31, 122)",
+        "codecov-blue": "rgb(0, 136, 233)",
+      },
+    },
   },
-  plugins: [require('daisyui')],
-  daisyui: {
-    themes: [{
-      codecov: {
-        ...require('daisyui/src/colors/themes')["[data-theme=light]"],
-        primary: '#FF0077',
-      }
-    }]
-  }
-}
+};

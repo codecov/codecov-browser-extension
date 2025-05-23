@@ -1,3 +1,32 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;300;400;500;600;700;800;900&family=Source+Code+Pro:wght@200;300;400;500;600;700;800;900&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  body {
+    font-family: Poppins, sans-serif;
+  }
+
+  a {
+    @apply text-codecov-blue;
+  }
+
+  label {
+    @apply text-sm py-2 px-1;
+  }
+
+  input {
+    font-family: Source Code Pro, monospace;
+    @apply text-sm;
+  }
+
+  input[type="text"] {
+    @apply border rounded-md p-3;
+  }
+
+  input[type="checkbox"] {
+    @apply w-4 h-4;
+  }
+}
