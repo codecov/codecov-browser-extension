@@ -18,7 +18,11 @@ Automatically see code coverage data and line annotations while browsing files o
 
 If you wish to simply use the extension, it is available as a [Firefox Add On](https://addons.mozilla.org/en-US/firefox/addon/codecov/) and a [Chrome Extension](https://chrome.google.com/webstore/detail/codecov/gedikamndpbemklijjkncpnolildpbgo).
 
-## About this extension
+__Note to Firefox users__: Required permissions must be granted manually on [about:addons](about:addons)
+
+<img width="692" alt="image" src="https://github.com/codecov/codecov-browser-extension/assets/44864521/7db5ba9f-2ac9-46ea-beec-ae22b85290cb">
+
+## About this extension 
 
 The Codecov browser extension makes it easy to identify needed test areas by showing you absolute coverage and coverage changes overlaid with your code right in GitHub.
 
