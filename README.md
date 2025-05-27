@@ -18,11 +18,11 @@ Automatically see code coverage data and line annotations while browsing files o
 
 If you wish to simply use the extension, it is available as a [Firefox Add On](https://addons.mozilla.org/en-US/firefox/addon/codecov/) and a [Chrome Extension](https://chrome.google.com/webstore/detail/codecov/gedikamndpbemklijjkncpnolildpbgo).
 
-__Note to Firefox users__: Required permissions must be granted manually on [about:addons](about:addons)
+**Note to Firefox users**: Required permissions must be granted manually on [about:addons](about:addons)
 
 <img width="692" alt="image" src="https://github.com/codecov/codecov-browser-extension/assets/44864521/7db5ba9f-2ac9-46ea-beec-ae22b85290cb">
 
-## About this extension 
+## About this extension
 
 The Codecov browser extension makes it easy to identify needed test areas by showing you absolute coverage and coverage changes overlaid with your code right in GitHub.
 
@@ -55,13 +55,14 @@ In order to do so you must provide:
 
 You can provide this information by using the Settings menu for the Extension in your browser.
 
-## Using the Safari extension
-
-We have published a Safari port of the extension, but it comes with the caveat that you _must_ use a Codecov API token for the extension to work.
-
-To use the extension with a cloud Codecov API token, follow the instructions [above](#use-with-self-hosted-and-dedicated-cloud-versions-of-codecov), but generate the API token in [cloud Codecov](https://app.codecov.io) and use the cloud urls for Codecov's API (`https://api.codecov.io`) and Github (`https://github.com`). Note that this also works on Chrome and Firefox, should you want to do that.
-
-We may fix this restriction in the future should the demand exist, but for now, this is just a low effort conversion provided as is.
+<!-- Commenting out this section as the safari extension has been deprioritized -->
+<!-- ## Using the Safari extension -->
+<!---->
+<!-- We have published a Safari port of the extension, but it comes with the caveat that you _must_ use a Codecov API token for the extension to work. -->
+<!---->
+<!-- To use the extension with a cloud Codecov API token, follow the instructions [above](#use-with-self-hosted-and-dedicated-cloud-versions-of-codecov), but generate the API token in [cloud Codecov](https://app.codecov.io) and use the cloud urls for Codecov's API (`https://api.codecov.io`) and Github (`https://github.com`). Note that this also works on Chrome and Firefox, should you want to do that. -->
+<!---->
+<!-- We may fix this restriction in the future should the demand exist, but for now, this is just a low effort conversion provided as is. -->
 
 ## Running Locally
 
