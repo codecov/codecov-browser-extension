@@ -22,7 +22,6 @@ jobs:
       - name: Build extension
         run: npm run build
         env:
-          SENTRY_DSN: ${{ vars.SENTRY_DSN }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
       - run: |
           jq --arg version "$VERSION" '.version=$version' dist/manifest.json > manifest.tmp.json \
