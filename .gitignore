@@ -4,3 +4,4 @@ dist/
 tmp/
 .vscode/
 codecov-browser-extension.tar.gz
+.DS_Store
