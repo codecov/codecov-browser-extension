@@ -31,7 +31,8 @@ jobs:
           jq --arg version "$VERSION" '.version=$version' dist/manifest.firefox.json > manifest.tmp.json \
             && mv manifest.tmp.json dist/manifest.firefox.json
         env:
-          VERSION: ${{ github.event.release.tag_name }}
+          # VERSION: ${{ github.event.release.tag_name }}
+          VERSION: 0.5.7
       - run: |
           cp -r dist dist-firefox
           mv dist-firefox/manifest.firefox.json dist-firefox/manifest.json
