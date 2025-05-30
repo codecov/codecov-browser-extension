@@ -36,7 +36,6 @@ jobs:
       - run: |
           cp -r dist dist-firefox
           mv dist-firefox/manifest.firefox.json dist-firefox/manifest.json
-          mv codecov-browser-extension.tar.gz dist-firefox
 
       - run: cd dist-firefox && npx web-ext build
 
@@ -45,13 +44,10 @@ jobs:
           name: codecov-0.5.7.zip
           path: ./dist-firefox/web-ext-artifacts/codecov-0.5.7.zip
 
-      - run: pwd
-
       - uses: actions/upload-artifact@v4
         with:
           name: codecov-browser-extension.tar.gz
-          path: ${{ github.workspace }}/codecov-browser-extension.tar.gz
-          include-hidden-files: true
+          path: codecov-browser-extension.tar.gz
 
       # - name: Publish to Chrome
       #   working-directory: dist
