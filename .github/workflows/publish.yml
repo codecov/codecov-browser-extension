@@ -45,12 +45,11 @@ jobs:
           name: codecov-0.5.7.zip
           path: ./dist-firefox/web-ext-artifacts/codecov-0.5.7.zip
 
-      - run: ls -R | grep tar.gz
-
       - uses: actions/upload-artifact@v4
         with:
           name: codecov-browser-extension.tar.gz
           path: codecov-browser-extension.tar.gz
+          include-hidden-files: true
 
       # - name: Publish to Chrome
       #   working-directory: dist
