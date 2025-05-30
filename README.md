@@ -26,7 +26,7 @@ If you wish to simply use the extension, it is available as a [Firefox Add On](h
 
 The Codecov browser extension makes it easy to identify needed test areas by showing you absolute coverage and coverage changes overlaid with your code right in GitHub.
 
-Once installed, get:
+Once installed, you get:
 
 - Line coverage information while viewing commits and single files
 - Line coverage information and coverage totals on Pull Requests
@@ -34,7 +34,7 @@ Once installed, get:
 
 Pre-requisites:
 
-- Must use either Firefox or Google Chrome web browsers.
+- Must use either the Firefox or Google Chrome web browser.
 
 How to enable:
 
@@ -67,7 +67,11 @@ You can provide this information by using the Settings menu for the Extension in
 ## Running Locally
 
 ```sh
-$ web-ext run -s dist -t chromium
+$ npm install
+# For Chrome
+$ npm run start:chrome
+# For Firefox
+$ npm run start:firefox
 ```
 
 **Note**: You must be on GitHub's new UI for this extension to perform its magic. ✨
@@ -80,21 +84,31 @@ As of today, GitHub will show you the old UI if not logged in (running in a temp
 
 These steps will build the extension in the `dist/` folder.
 
-Node 22 and npm 10
+### Prerequisites
 
-Chrome
+Node 22, `npm` 10, and `git` are required to build the extension.
+
+### Set Local Version
+
+To override the local version of the extension, you can set the `VERSION` environment variable before building. This is useful for testing or development purposes.
+
+E.g.
+```sh
+$ export VERSION=1.0.0
+```
+
+### Chrome
 
 ```sh
 $ npm install
 $ npm run build
 ```
 
-Firefox
+### Firefox
 
 ```sh
 $ npm install
-$ npm run build
-$ mv dist/manifest.firefox.json dist/manifest.json
+$ npm run build:firefox
 ```
 
 ## About Codecov
