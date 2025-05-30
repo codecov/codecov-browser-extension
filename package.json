@@ -11,7 +11,7 @@
     "archive": "tar -czvf codecov-browser-extension.tar.gz --exclude node_modules ./*"
   },
   "author": "",
-  "license": "UNLICENSED",
+  "license": "Apache-2.0",
   "dependencies": {
     "@fortawesome/free-solid-svg-icons": "^6.3.0",
     "@fortawesome/react-fontawesome": "^0.2.0",
