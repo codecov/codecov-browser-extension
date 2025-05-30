@@ -42,11 +42,13 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          path: ./dist-firefox/web-ext-artifacts/*
+          name: codecov-0.5.7.zip
+          path: ./dist-firefox/web-ext-artifacts/codecov-0.5.7.zip
 
       - uses: actions/upload-artifact@v4
         with:
-          path: ./codecov-browser-extension.tar.gz
+          name: codecov-browser-extension.tar.gz
+          path: codecov-browser-extension.tar.gz
 
       # - name: Publish to Chrome
       #   working-directory: dist
