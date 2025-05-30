@@ -50,7 +50,8 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: codecov-browser-extension.tar.gz
-          path: /home/runner/work/codecov-browser-extension/codecov-browser-extension/codecov-browser-extension.tar.gz
+          path: ${{ github.workspace }}/codecov-browser-extension.tar.gz
+          include-hidden-files: true
 
       # - name: Publish to Chrome
       #   working-directory: dist
