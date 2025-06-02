@@ -86,7 +86,7 @@ These steps will build the extension in the `dist/` folder.
 
 ### Prerequisites
 
-Node 22, `npm` 10, and `git` are required to build the extension.
+Node 22, `npm` 10, `git`, and `jq` are required to build the extension.
 
 ### Set Local Version
 
@@ -96,6 +96,10 @@ E.g.
 ```sh
 $ export VERSION=1.0.0
 ```
+
+### Use Development Sentry DSN
+
+If you want to use Sentry while developing, you can override the DSN value by first copying the example config (`cp .env.example .env.local`) and then filling in the environment variable.
 
 ### Chrome
 
