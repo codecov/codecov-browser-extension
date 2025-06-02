@@ -15,11 +15,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: Create local git tag
-        # This is necessary to ensure that the tag exists within the
-        # source archive and can be read by our set-version script.
-        run: |
-          git tag "${{ github.event.release.tag_name }}"
       - name: Generate source archive
         run: npm run archive
       - name: Install dependencies
