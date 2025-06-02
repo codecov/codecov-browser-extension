@@ -5,13 +5,16 @@
   "main": "index.js",
   "scripts": {
     "watch": "webpack --config webpack/webpack.dev.js --watch",
-    "build": "webpack --config webpack/webpack.prod.js",
-    "build.firefox": "npm run build && mv dist/manifest.firefox.json dist/manifest.json",
+    "set-version": "jq --arg v \"${VERSION:-$(git describe --tags --abbrev=0)}\" '.version = $v' dist/manifest.json > dist/manifest.tmp.json && mv dist/manifest.tmp.json dist/manifest.json",
+    "build": "webpack --config webpack/webpack.prod.js && npm run set-version",
+    "build:firefox": "npm run build && mv dist/manifest.firefox.json dist/manifest.json && npm run set-version",
+    "start:chrome": "npm run build && web-ext run -s dist -t chromium --start-url https://github.com",
+    "start:firefox": "npm run build:firefox && web-ext run -s dist -t firefox-desktop --start-url https://github.com",
     "lint": "prettier --write \"src/**/*.{ts,tsx}\"",
-    "archive": "tar -czvf codecov-browser-extension.tar.gz --exclude node_modules ./*"
+    "archive": "tar -czvf ../codecov-browser-extension.tar.gz --exclude node_modules --exclude dist . && mv ../codecov-browser-extension.tar.gz ./"
   },
   "author": "",
-  "license": "UNLICENSED",
+  "license": "Apache-2.0",
   "dependencies": {
     "@fortawesome/free-solid-svg-icons": "^6.3.0",
     "@fortawesome/react-fontawesome": "^0.2.0",
@@ -48,6 +51,7 @@
     "ts-loader": "^8.0.0",
     "tsconfig-paths-webpack-plugin": "^4.0.1",
     "typescript": "^5.7.3",
+    "web-ext": "^8.7.1",
     "webpack": "^5.76.0",
     "webpack-cli": "^4.0.0",
     "webpack-merge": "^5.0.0"

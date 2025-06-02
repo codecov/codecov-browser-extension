@@ -11,10 +11,15 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: Create local git tag
+        # This is necessary to ensure that the tag exists within the
+        # source archive and can be read by our set-version script.
+        run: |
+          git tag "${{ github.event.release.tag_name }}"
       - name: Generate source archive
         run: npm run archive
       - name: Install dependencies
@@ -22,22 +27,32 @@ jobs:
       - name: Build extension
         run: npm run build
         env:
-          SENTRY_DSN: ${{ vars.SENTRY_DSN }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      - run: |
-          jq --arg version "$VERSION" '.version=$version' dist/manifest.json > manifest.tmp.json \
-            && mv manifest.tmp.json dist/manifest.json
-          jq --arg version "$VERSION" '.version=$version' dist/manifest.firefox.json > manifest.tmp.json \
-            && mv manifest.tmp.json dist/manifest.firefox.json
-        env:
           VERSION: ${{ github.event.release.tag_name }}
-      - run: |
-          cp -r dist dist-firefox
-          mv dist-firefox/manifest.firefox.json dist-firefox/manifest.json
-          mv codecov-browser-extension.tar.gz dist-firefox
+      - name: Prepare Firefox extension
+        run: |
+          cp -r dist dist-chrome
+          mv dist/manifest.firefox.json dist/manifest.json
+          npm run set-version
+          mv dist dist-firefox
+      - name: Upload built Chrome extension
+        uses: actions/upload-artifact@v4
+        with:
+          name: codecov-chrome-${{ github.event.release.tag_name }}
+          path: ./dist-chrome/
+      - name: Upload built Firefox extension
+        uses: actions/upload-artifact@v4
+        with:
+          name: codecov-firefox-${{ github.event.release.tag_name }}
+          path: ./dist-firefox/
+      - name: Upload source archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: codecov-browser-extension.tar.gz
+          path: codecov-browser-extension.tar.gz
       - name: Publish to Chrome
-        working-directory: dist
-        run: npx chrome-webstore-upload-cli@2 upload --auto-publish
+        working-directory: dist-chrome
+        run: npx chrome-webstore-upload-cli@3
         env:
           EXTENSION_ID: "gedikamndpbemklijjkncpnolildpbgo"
           CLIENT_ID: ${{ secrets.GOOGLE_WEB_STORE_CLIENT_ID }}
@@ -50,4 +65,5 @@ jobs:
           WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_JWT_ISSUER }}
           WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_JWT_SECRET }}
           WEB_EXT_CHANNEL: listed
-          WEB_EXT_API_UPLOAD_SOURCE_CODE: codecov-browser-extension.tar.gz
+          WEB_EXT_API_UPLOAD_SOURCE_CODE: ../codecov-browser-extension.tar.gz
+          WEB_EXT_APPROVAL_TIMEOUT: 0 # Disable timeout for approval
