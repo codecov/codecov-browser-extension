@@ -17,6 +17,8 @@ jobs:
           node-version: "22"
       - name: Generate source archive
         run: npm run archive
+        env:
+          VERSION: ${{ github.event.release.tag_name }}
       - name: Install dependencies
         run: npm ci
       - name: Build extension
@@ -43,8 +45,8 @@ jobs:
       - name: Upload source archive
         uses: actions/upload-artifact@v4
         with:
-          name: codecov-browser-extension.tar.gz
-          path: codecov-browser-extension.tar.gz
+          name: codecov-browser-extension-${{ github.event.release.tag_name }}.tar.gz
+          path: codecov-browser-extension-${{ github.event.release.tag_name }}.tar.gz
       - name: Publish to Chrome
         working-directory: dist-chrome
         run: npx chrome-webstore-upload-cli@3
@@ -60,5 +62,5 @@ jobs:
           WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_JWT_ISSUER }}
           WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_JWT_SECRET }}
           WEB_EXT_CHANNEL: listed
-          WEB_EXT_API_UPLOAD_SOURCE_CODE: ../codecov-browser-extension.tar.gz
+          WEB_EXT_API_UPLOAD_SOURCE_CODE: ../codecov-browser-extension-${{ github.event.release.tag_name }}.tar.gz
           WEB_EXT_APPROVAL_TIMEOUT: 0 # Disable timeout for approval
