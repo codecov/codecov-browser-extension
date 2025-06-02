@@ -16,8 +16,7 @@ import {
 // https://docs.sentry.io/platforms/javascript/best-practices/browser-extensions/
 
 const sentryClient = new BrowserClient({
-  // @ts-ignore SENTRY_DSN is populated by Webpack at build time
-  dsn: SENTRY_DSN,
+  dsn: process.env.SENTRY_DSN,
   transport: makeFetchTransport,
   stackParser: defaultStackParser,
   integrations: [

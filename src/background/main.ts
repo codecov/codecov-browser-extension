@@ -16,8 +16,7 @@ async function main(): Promise<void> {
   browser.runtime.onMessage.addListener(handleMessages);
 
   sentryInit({
-    // @ts-ignore SENTRY_DSN is populated by Webpack at build time
-    dsn: SENTRY_DSN,
+    dsn: process.env.SENTRY_DSN,
 
     integrations: [
       browserTracingIntegration({
