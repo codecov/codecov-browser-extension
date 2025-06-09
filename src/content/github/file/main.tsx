@@ -60,7 +60,11 @@ function init(): Promise<void> {
 
 async function main(): Promise<void> {
   try {
-    await ensureConsent();
+    const consent = await ensureConsent();
+    if (!consent) {
+      return;
+    }
+
     const urlMetadata = getMetadataFromURL();
     if (!urlMetadata) {
       print("file not detected at current URL");

@@ -23,7 +23,11 @@ const globals: {
 
 async function main() {
   try {
-    await ensureConsent({ checkOnly: true });
+    const consent = await ensureConsent({ checkOnly: true });
+    if (!consent) {
+      return;
+    }
+
     document.addEventListener("soft-nav:end", execute);
     await execute();
   } catch (e) {

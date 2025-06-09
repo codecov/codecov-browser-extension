@@ -1,14 +1,15 @@
+import { print } from "src/utils";
 import { consentStorageKey, consentDialogCopy } from "./constants";
 
 export async function ensureConsent(
   { checkOnly }: { checkOnly: boolean } = { checkOnly: false }
-) {
+): Promise<boolean> {
   let consent: boolean = await chrome.storage.local
     .get(consentStorageKey)
     .then((res) => res[consentStorageKey]);
 
   if (consent) {
-    return;
+    return consent;
   }
 
   if (!checkOnly) {
@@ -16,7 +17,8 @@ export async function ensureConsent(
   }
 
   if (!consent) {
-    throw new Error("Codecov extension data collection consent not given.");
+    print("no consent was given, so the extension will not run");
+    return consent;
   }
 
   const storageObject: { [id: string]: boolean } = {};
@@ -24,5 +26,5 @@ export async function ensureConsent(
 
   chrome.storage.local.set(storageObject);
 
-  return Promise.resolve();
+  return consent;
 }
