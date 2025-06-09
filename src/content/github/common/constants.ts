@@ -1,3 +1,9 @@
+// The version number here should represent the last version where consent requirement was updated.
+// We must update the key's version to re-request consent whenever the data we collect changes.
+export const consentStorageKey = "codecov-consent-0.5.9";
+export const consentDialogCopy =
+  "By clicking OK, you are authorizing the Codecov browser extension to collect your IP address and the URLs you visit on domains you've given the extension access to. Declining this will prevent the extension from working. For more information see the Privacy Policy in the Codecov extension store listing.";
+
 export const animationName = "codecov-gh-observer";
 
 export const animationDefinitionId = `${animationName}-keyframe`;

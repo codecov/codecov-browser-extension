@@ -1,5 +1,4 @@
 import React from "dom-chef";
-import browser from "webextension-polyfill";
 import _ from "lodash";
 
 import "src/basscss.css";
@@ -16,6 +15,7 @@ import { print } from "src/utils";
 import { getPRReport } from "../common/fetchers";
 import { isPrUrl } from "../common/utils";
 import Sentry from "src/content/common/sentry";
+import { ensureConsent } from "../common/consent";
 
 const globals: {
   coverageReport?: PullCoverageReport;
@@ -23,6 +23,7 @@ const globals: {
 
 async function main() {
   try {
+    await ensureConsent({ checkOnly: true });
     document.addEventListener("soft-nav:end", execute);
     await execute();
   } catch (e) {
