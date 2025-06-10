@@ -1,0 +1,30 @@
+import { print } from "src/utils";
+import { consentStorageKey, consentDialogCopy } from "./constants";
+
+export async function ensureConsent(
+  { checkOnly }: { checkOnly: boolean } = { checkOnly: false }
+): Promise<boolean> {
+  let consent: boolean = await chrome.storage.local
+    .get(consentStorageKey)
+    .then((res) => res[consentStorageKey]);
+
+  if (consent) {
+    return consent;
+  }
+
+  if (!checkOnly) {
+    consent = window.confirm(consentDialogCopy);
+  }
+
+  if (!consent) {
+    print("no consent was given, so the extension will not run");
+    return consent;
+  }
+
+  const storageObject: { [id: string]: boolean } = {};
+  storageObject[consentStorageKey] = consent;
+
+  chrome.storage.local.set(storageObject);
+
+  return consent;
+}
