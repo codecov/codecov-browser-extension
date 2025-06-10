@@ -15,7 +15,6 @@ import { print } from "src/utils";
 import { getPRReport } from "../common/fetchers";
 import { isPrUrl } from "../common/utils";
 import Sentry from "src/content/common/sentry";
-import { ensureConsent } from "../common/consent";
 
 const globals: {
   coverageReport?: PullCoverageReport;
@@ -23,11 +22,6 @@ const globals: {
 
 async function main() {
   try {
-    const consent = await ensureConsent({ checkOnly: true });
-    if (!consent) {
-      return;
-    }
-
     document.addEventListener("soft-nav:end", execute);
     await execute();
   } catch (e) {
