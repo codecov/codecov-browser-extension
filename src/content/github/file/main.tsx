@@ -32,6 +32,7 @@ import {
 } from "../common/fetchers";
 import { print } from "src/utils";
 import Sentry from "../../common/sentry";
+import { ensureConsent } from "../common/consent";
 
 const globals: {
   coverageReport?: FileCoverageReport;
@@ -59,6 +60,11 @@ function init(): Promise<void> {
 
 async function main(): Promise<void> {
   try {
+    const consent = await ensureConsent();
+    if (!consent) {
+      return;
+    }
+
     const urlMetadata = getMetadataFromURL();
     if (!urlMetadata) {
       print("file not detected at current URL");
