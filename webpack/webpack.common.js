@@ -42,6 +42,9 @@ module.exports = {
     extensions: [".ts", ".tsx", ".js"],
   },
   plugins: [
+    new DefinePlugin({
+      IS_FIREFOX: process.env.IS_FIREFOX ? true : false,
+    }),
     new CopyPlugin({
       patterns: [{ from: ".", to: "../", context: "public" }],
       options: {},

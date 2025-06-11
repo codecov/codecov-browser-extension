@@ -4,6 +4,14 @@ import { consentStorageKey, consentDialogCopy } from "./constants";
 export async function ensureConsent(
   { checkOnly }: { checkOnly: boolean } = { checkOnly: false }
 ): Promise<boolean> {
+  // We only need to get consent for firefox
+  // @ts-ignore IS_FIREFOX is populated by Webpack at build time
+  console.log("hi", IS_FIREFOX);
+  // @ts-ignore IS_FIREFOX is populated by Webpack at build time
+  if (!IS_FIREFOX) {
+    return true;
+  }
+
   let consent: boolean = await chrome.storage.local
     .get(consentStorageKey)
     .then((res) => res[consentStorageKey]);
