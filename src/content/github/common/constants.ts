@@ -2,7 +2,7 @@
 // We must update the key's version to re-request consent whenever the data we collect changes.
 export const consentStorageKey = "codecov-consent-0.5.9";
 export const consentDialogCopy =
-  "By clicking OK, you are authorizing the Codecov browser extension to collect your IP address and the URLs you visit on domains you've given the extension access to. Declining this will prevent the extension from working. For more information see the Privacy Policy in the Codecov extension store listing.";
+  "By clicking OK you agree to the Codecov browser extension's privacy policy. See https://addons.mozilla.org/en-US/firefox/addon/codecov/privacy/ to read the policy. This message will show up again if you click Cancel. If you do not wish to agree please uninstall the extension.;
 
 export const animationName = "codecov-gh-observer";
 
