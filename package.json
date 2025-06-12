@@ -5,13 +5,12 @@
   "main": "index.js",
   "scripts": {
     "dev": "webpack --config webpack/webpack.dev.js",
-    "watch": "npm run dev -- --watch",
     "firefox-manifest": "mv dist/manifest.firefox.json dist/manifest.json",
     "set-version": "jq --arg v \"${VERSION:-$(git describe --tags --abbrev=0)}\" '.version = $v' dist/manifest.json > dist/manifest.tmp.json && mv dist/manifest.tmp.json dist/manifest.json",
     "build": "webpack --config webpack/webpack.prod.js && npm run set-version",
-    "build:firefox": "npm run build && npm run firefox-manifest && npm run set-version",
+    "build:firefox": "IS_FIREFOX=1 npm run build && npm run firefox-manifest && npm run set-version",
     "start:chrome": "npm run dev && web-ext run -s dist -t chromium --start-url https://github.com",
-    "start:firefox": "npm run dev && npm run firefox-manifest && web-ext run -s dist -t firefox-desktop --start-url https://github.com",
+    "start:firefox": "IS_FIREFOX=1 npm run dev && npm run firefox-manifest && web-ext run -s dist -t firefox-desktop --start-url https://github.com",
     "lint": "prettier --write \"src/**/*.{ts,tsx}\"",
     "archive": "tar -czvf ../codecov-browser-extension.tar.gz --exclude node_modules --exclude dist . && mv ../codecov-browser-extension.tar.gz ./codecov-browser-extension-${VERSION:-$(git describe --tags --abbrev=0)}.tar.gz"
   },
