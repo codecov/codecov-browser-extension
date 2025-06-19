@@ -55,12 +55,12 @@ jobs:
           CLIENT_ID: ${{ secrets.GOOGLE_WEB_STORE_CLIENT_ID }}
           CLIENT_SECRET: ${{ secrets.GOOGLE_WEB_STORE_CLIENT_SECRET }}
           REFRESH_TOKEN: ${{ secrets.GOOGLE_WEB_STORE_REFRESH_TOKEN }}
-      # - name: Publish to Firefox
-      #   working-directory: dist-firefox
-      #   run: npx web-ext sign
-      #   env:
-      #     WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_JWT_ISSUER }}
-      #     WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_JWT_SECRET }}
-      #     WEB_EXT_CHANNEL: listed
-      #     WEB_EXT_API_UPLOAD_SOURCE_CODE: ../codecov-browser-extension-${{ github.event.release.tag_name }}.tar.gz
-      #     WEB_EXT_APPROVAL_TIMEOUT: 0 # Disable timeout for approval
+      - name: Publish to Firefox
+        working-directory: dist-firefox
+        run: npx web-ext sign
+        env:
+          WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_JWT_ISSUER }}
+          WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_JWT_SECRET }}
+          WEB_EXT_CHANNEL: listed
+          WEB_EXT_API_UPLOAD_SOURCE_CODE: ../codecov-browser-extension-${{ github.event.release.tag_name }}.tar.gz
+          WEB_EXT_APPROVAL_TIMEOUT: 0 # Disable timeout for approval
