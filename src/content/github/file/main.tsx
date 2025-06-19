@@ -29,10 +29,10 @@ import {
   getCommitReport,
   getFlags,
   getBranchReport,
+  getConsent,
 } from "../common/fetchers";
 import { print } from "src/utils";
 import Sentry from "../../common/sentry";
-import { ensureConsent } from "../common/consent";
 
 const globals: {
   coverageReport?: FileCoverageReport;
@@ -60,8 +60,7 @@ function init(): Promise<void> {
 
 async function main(): Promise<void> {
   try {
-    const consent = await ensureConsent();
-    if (!consent) {
+    if (!(await getConsent())) {
       return;
     }
 

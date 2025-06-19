@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Codecov Browser Extension</title>
+    <script src="consent.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:opsz@14..32&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      html {
+        height: 100vh;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        font-weight: 400;
+        font-size: 20px;
+        line-height: 30px;
+        letter-spacing: 0%;
+        text-align: center;
+        color: rgb(14, 27, 41);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        margin: 0;
+      }
+
+      div#content {
+        max-width: 796px;
+        flex-grow: 0;
+        flex-shrink: 1;
+      }
+
+      h1 {
+        font-size: 60px;
+        line-height: 100%;
+      }
+
+      a {
+        text-decoration: none;
+      }
+
+      button {
+        width: 214px;
+        height: 49px;
+        border-radius: 4px;
+        border-width: 1px;
+        padding-top: 4px;
+        padding-right: 16px;
+        padding-bottom: 4px;
+        padding-left: 16px;
+        background: rgba(0, 149, 255, 1);
+        border: 1px solid rgba(1, 88, 150, 1);
+        box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1);
+        box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.06);
+
+        font-size: 18px;
+        line-height: 150%;
+        text-align: center;
+        vertical-align: middle;
+        color: rgba(255, 255, 255, 1);
+
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="content">
+      <svg
+        width="108"
+        height="103"
+        viewBox="0 0 108 103"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M54.1288 0C24.2973 0 0 24.0054 0 53.2965V53.5371L9.14057 58.8228H9.38155C15.1567 54.9809 22.1368 53.5371 29.1086 54.7403C33.9198 55.7028 38.4901 57.8602 42.0965 61.2208L43.7833 62.6646L44.7472 60.7478C45.7112 58.8311 46.6751 57.1466 47.6307 55.4622C48.1126 54.7403 48.5946 54.259 49.0766 53.5454L50.0405 52.3422L48.8356 51.3797C43.7833 47.2972 37.7672 44.4179 31.2691 43.2147C25.0119 42.0115 18.7548 42.2522 12.9879 44.1772C17.3255 25.2086 34.1608 11.7662 54.1288 11.7662C65.4382 11.7662 76.0246 16.0893 83.9603 24.0137C89.7355 29.5317 93.5828 36.5018 95.2697 44.1772C91.6633 42.9741 87.8076 42.4928 83.9603 42.4928H83.2374C81.7915 42.4928 80.3539 42.7334 78.6671 42.7334H78.4261C77.9441 42.7334 77.2212 42.9741 76.7392 42.9741C75.7753 43.2147 75.0524 43.2147 74.0968 43.4553L73.3739 43.696C72.6509 43.9366 71.928 44.1772 71.205 44.4179H70.9641C69.2772 44.8991 67.8397 45.621 66.1528 46.3347C65.4299 46.5753 64.7069 47.0566 63.984 47.5378H63.743C60.1366 49.6952 56.7629 52.3422 54.1205 55.7028L53.8795 56.1841C53.1566 57.1466 52.6746 57.8685 52.1927 58.3415C51.7107 58.8228 51.4697 59.5447 50.9878 60.2583L50.7468 60.7395C50.2648 61.4615 50.0239 62.1834 49.7829 62.6563V62.897C49.0599 64.3408 48.337 66.0169 47.855 67.7014V67.942C46.6502 71.7839 45.9272 75.8664 45.9272 80.1895V84.7532C45.9272 85.2345 46.1682 85.9564 46.1682 86.4377C47.3731 92.1963 50.0155 97.7226 54.1039 102.759L54.3448 103L54.5858 102.759C56.2727 100.843 60.12 94.835 60.602 91.2338C58.6742 87.6326 57.7185 83.5501 57.7185 79.7082C57.7185 66.2659 68.305 54.9809 82.0158 54.259H82.9798C88.514 54.0184 94.0482 55.7028 98.6185 58.8228H98.8594L108 53.5371V53.2965C108 39.1322 102.466 25.6898 92.1203 15.6081C82.0408 5.51801 68.5709 0 54.1288 0Z"
+          fill="#FF0077"
+        />
+      </svg>
+      <h1>Codecov Browser Extension</h1>
+      <p>
+        If you're seeing this, we've updated our
+        <a
+          href="https://addons.mozilla.org/en-US/firefox/addon/codecov/privacy/"
+          >privacy policy</a
+        >.
+      </p>
+      <p>
+        By clicking 'Accept', you confirm that you understand and agree to the
+        privacy policy of the Codecov Browser Extension. Should you decide not
+        to accept, please note that the extension will not work.
+      </p>
+      <br />
+      <button id="codecov-consent-accept">Accept</button>
+    </div>
+  </body>
+</html>

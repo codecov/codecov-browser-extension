@@ -9,6 +9,7 @@ import {
   selfHostedGitHubURLStorageKey,
   providers,
   cacheTtlMs,
+  consentStorageKey,
 } from "src/constants";
 
 export class Codecov {
@@ -248,5 +249,28 @@ export class Codecov {
       ok: response.ok,
       data,
     };
+  }
+
+  async getConsent(): Promise<boolean> {
+    // We only need to get consent for firefox
+    // @ts-ignore IS_FIREFOX is populated by Webpack at build time
+    if (!IS_FIREFOX) {
+      return true;
+    }
+
+    const consent: boolean = await browser.storage.local
+      .get(consentStorageKey)
+      .then((res) => res[consentStorageKey]);
+
+    return !!consent;
+  }
+
+  async setConsent(consent: boolean): Promise<boolean> {
+    const storageObject: { [id: string]: boolean } = {};
+    storageObject[consentStorageKey] = consent;
+
+    await browser.storage.local.set(storageObject);
+
+    return consent;
   }
 }
