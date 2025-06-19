@@ -258,7 +258,7 @@ export class Codecov {
       return true;
     }
 
-    const consent: boolean = await browser.storage.local
+    const consent: boolean | undefined = await browser.storage.local
       .get(consentStorageKey)
       .then((res) => res[consentStorageKey]);
 
