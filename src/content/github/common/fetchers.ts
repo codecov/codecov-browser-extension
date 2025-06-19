@@ -101,3 +101,11 @@ export async function getPRReport(url: any) {
 
   return response.data;
 }
+
+export async function getConsent() {
+  const response = await browser.runtime.sendMessage({
+    type: MessageType.GET_CONSENT,
+  });
+
+  return response;
+}
