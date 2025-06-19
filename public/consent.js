@@ -1,7 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
   var button = document.getElementById("codecov-consent-accept");
   button.addEventListener("click", async function () {
-    console.log("click");
     const result = await browser.runtime.sendMessage({
       type: "set_consent",
       payload: true,
