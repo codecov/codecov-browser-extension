@@ -121,4 +121,4 @@ $ npm run build:firefox
 
 ## License
 
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fcodecov%2Fcodecov-browser-extension.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fcodecov%2Fcodecov-browser-extension?ref=badge_large)
+[![FOSSA Status](https://app.fossa.com/api/projects/custom%2B29430%2Fgithub.com%2Fcodecov%2Fcodecov-browser-extension.svg?type=large&issueType=license)](https://app.fossa.com/projects/custom%2B29430%2Fgithub.com%2Fcodecov%2Fcodecov-browser-extension?ref=badge_large&issueType=license)
