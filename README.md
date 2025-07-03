@@ -88,7 +88,11 @@ These steps will build the extension in the `dist/` folder.
 
 Node 22, `npm` 10, `git`, and `jq` are required to build the extension.
 
+If you're a reviewer from Mozilla, hi! Please note that we have previously seen differences in build output between AMD64 and ARM64. In our CD pipeline we build on Ubuntu 24.04 AMD64, so please stick to that architecture if possible to eliminate any environment differences.
+
 ### Set Local Version
+
+If you're a reviewer from Mozilla, you don't need to do this.
 
 To override the local version of the extension, you can set the `VERSION` environment variable before building. This is useful for testing or development purposes.
 
@@ -99,20 +103,21 @@ $ export VERSION=1.0.0
 
 ### Use Development Sentry DSN
 
+If you're a reviewer from Mozilla, you don't need to do this.
+
 If you want to use Sentry while developing, you can override the DSN value by first copying the example config (`cp .env.example .env.local`) and then filling in the environment variable.
-
-### Chrome
-
-```sh
-$ npm install
-$ npm run build
-```
 
 ### Firefox
 
 ```sh
-$ npm install
+$ npm ci
 $ npm run build:firefox
+```
+### Chrome
+
+```sh
+$ npm ci
+$ npm run build
 ```
 
 ## About Codecov

@@ -7,56 +7,44 @@ on:
   release:
     types: [published]
 
+env:
+  VERSION: ${{ github.event.release.tag_name }}
+
 jobs:
-  publish:
-    runs-on: ubuntu-latest
+  publish-firefox:
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+
       - name: Generate source archive
         run: npm run archive
-        env:
-          VERSION: ${{ github.event.release.tag_name }}
-      - name: Install dependencies
-        run: npm ci
-      - name: Build extension
-        run: npm run build
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          VERSION: ${{ github.event.release.tag_name }}
-      - name: Prepare Firefox extension
-        run: |
-          cp -r dist dist-chrome
-          mv dist/manifest.firefox.json dist/manifest.json
-          npm run set-version
-          mv dist dist-firefox
-      - name: Upload built Chrome extension
-        uses: actions/upload-artifact@v4
-        with:
-          name: codecov-chrome-${{ github.event.release.tag_name }}
-          path: ./dist-chrome/
-      - name: Upload built Firefox extension
-        uses: actions/upload-artifact@v4
-        with:
-          name: codecov-firefox-${{ github.event.release.tag_name }}
-          path: ./dist-firefox/
+
       - name: Upload source archive
         uses: actions/upload-artifact@v4
         with:
           name: codecov-browser-extension-${{ github.event.release.tag_name }}.tar.gz
           path: codecov-browser-extension-${{ github.event.release.tag_name }}.tar.gz
-      - name: Publish to Chrome
-        working-directory: dist-chrome
-        run: npx chrome-webstore-upload-cli@3
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Firefox extension
+        run: npm run build:firefox
         env:
-          EXTENSION_ID: "gedikamndpbemklijjkncpnolildpbgo"
-          CLIENT_ID: ${{ secrets.GOOGLE_WEB_STORE_CLIENT_ID }}
-          CLIENT_SECRET: ${{ secrets.GOOGLE_WEB_STORE_CLIENT_SECRET }}
-          REFRESH_TOKEN: ${{ secrets.GOOGLE_WEB_STORE_REFRESH_TOKEN }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+
+      - name: Upload built Firefox extension
+        uses: actions/upload-artifact@v4
+        with:
+          name: codecov-firefox-${{ github.event.release.tag_name }}
+          path: ./dist/
+
       - name: Publish to Firefox
-        working-directory: dist-firefox
+        working-directory: dist
         run: npx web-ext sign
         env:
           WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_JWT_ISSUER }}
@@ -64,3 +52,35 @@ jobs:
           WEB_EXT_CHANNEL: listed
           WEB_EXT_UPLOAD_SOURCE_CODE: ../codecov-browser-extension-${{ github.event.release.tag_name }}.tar.gz
           WEB_EXT_APPROVAL_TIMEOUT: 0 # Disable timeout for approval
+
+  publish-chrome:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Chrome extension
+        run: npm run build
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+
+      - name: Upload built Chrome extension
+        uses: actions/upload-artifact@v4
+        with:
+          name: codecov-chrome-${{ github.event.release.tag_name }}
+          path: ./dist/
+
+      - name: Publish to Chrome
+        working-directory: dist
+        run: npx chrome-webstore-upload-cli@3
+        env:
+          EXTENSION_ID: "gedikamndpbemklijjkncpnolildpbgo"
+          CLIENT_ID: ${{ secrets.GOOGLE_WEB_STORE_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.GOOGLE_WEB_STORE_CLIENT_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.GOOGLE_WEB_STORE_REFRESH_TOKEN }}
