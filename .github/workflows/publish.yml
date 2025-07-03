@@ -15,50 +15,61 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: 1fd5e3779d65d43134eddebac01e35f0ea3c0ebb
+
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+
       - name: Generate source archive
         run: npm run archive
         env:
           VERSION: 0.6.0
-      - name: Install dependencies
-        run: npm ci
-      - name: Build extension
-        run: npm run build
-        env:
-          VERSION: 0.6.0
-      - name: Prepare Firefox extension
-        run: |
-          cp -r dist dist-chrome
-          mv dist/manifest.firefox.json dist/manifest.json
-          npm run set-version
-          mv dist dist-firefox
-      - name: Upload built Chrome extension
-        uses: actions/upload-artifact@v4
-        with:
-          name: codecov-chrome-0.6.0
-          path: ./dist-chrome/
-      - name: Upload built Firefox extension
-        uses: actions/upload-artifact@v4
-        with:
-          name: codecov-firefox-0.6.0
-          path: ./dist-firefox/
+
       - name: Upload source archive
         uses: actions/upload-artifact@v4
         with:
           name: codecov-browser-extension-0.6.0.tar.gz
           path: codecov-browser-extension-0.6.0.tar.gz
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Chrome extension
+        run: npm run build
+        env:
+          VERSION: 0.6.0
+
+      - name: Upload built Chrome extension
+        uses: actions/upload-artifact@v4
+        with:
+          name: codecov-chrome-0.6.0
+          path: ./dist/
+
       # - name: Publish to Chrome
-      #   working-directory: dist-chrome
+      #   working-directory: dist
       #   run: npx chrome-webstore-upload-cli@3
       #   env:
       #     EXTENSION_ID: "gedikamndpbemklijjkncpnolildpbgo"
       #     CLIENT_ID: ${{ secrets.GOOGLE_WEB_STORE_CLIENT_ID }}
       #     CLIENT_SECRET: ${{ secrets.GOOGLE_WEB_STORE_CLIENT_SECRET }}
       #     REFRESH_TOKEN: ${{ secrets.GOOGLE_WEB_STORE_REFRESH_TOKEN }}
+
+      - name: Clean dist
+        run: rm -r dist
+
+      - name: Build Firefox extension
+        run: npm run build:firefox
+        env:
+          VERSION: 0.6.0
+
+      - name: Upload built Firefox extension
+        uses: actions/upload-artifact@v4
+        with:
+          name: codecov-firefox-0.6.0
+          path: ./dist/
+
       # - name: Publish to Firefox
-      #   working-directory: dist-firefox
+      #   working-directory: dist
       #   run: npx web-ext sign
       #   env:
       #     WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_JWT_ISSUER }}
