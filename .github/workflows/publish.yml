@@ -6,6 +6,7 @@ permissions:
 on:
   release:
     types: [published]
+  push:
 
 jobs:
   publish:
@@ -18,14 +19,13 @@ jobs:
       - name: Generate source archive
         run: npm run archive
         env:
-          VERSION: ${{ github.event.release.tag_name }}
+          VERSION: 0.6.0
       - name: Install dependencies
         run: npm ci
       - name: Build extension
         run: npm run build
         env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          VERSION: ${{ github.event.release.tag_name }}
+          VERSION: 0.6.0
       - name: Prepare Firefox extension
         run: |
           cp -r dist dist-chrome
@@ -35,32 +35,32 @@ jobs:
       - name: Upload built Chrome extension
         uses: actions/upload-artifact@v4
         with:
-          name: codecov-chrome-${{ github.event.release.tag_name }}
+          name: codecov-chrome-0.6.0
           path: ./dist-chrome/
       - name: Upload built Firefox extension
         uses: actions/upload-artifact@v4
         with:
-          name: codecov-firefox-${{ github.event.release.tag_name }}
+          name: codecov-firefox-0.6.0
           path: ./dist-firefox/
       - name: Upload source archive
         uses: actions/upload-artifact@v4
         with:
-          name: codecov-browser-extension-${{ github.event.release.tag_name }}.tar.gz
-          path: codecov-browser-extension-${{ github.event.release.tag_name }}.tar.gz
-      - name: Publish to Chrome
-        working-directory: dist-chrome
-        run: npx chrome-webstore-upload-cli@3
-        env:
-          EXTENSION_ID: "gedikamndpbemklijjkncpnolildpbgo"
-          CLIENT_ID: ${{ secrets.GOOGLE_WEB_STORE_CLIENT_ID }}
-          CLIENT_SECRET: ${{ secrets.GOOGLE_WEB_STORE_CLIENT_SECRET }}
-          REFRESH_TOKEN: ${{ secrets.GOOGLE_WEB_STORE_REFRESH_TOKEN }}
-      - name: Publish to Firefox
-        working-directory: dist-firefox
-        run: npx web-ext sign
-        env:
-          WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_JWT_ISSUER }}
-          WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_JWT_SECRET }}
-          WEB_EXT_CHANNEL: listed
-          WEB_EXT_UPLOAD_SOURCE_CODE: ../codecov-browser-extension-${{ github.event.release.tag_name }}.tar.gz
-          WEB_EXT_APPROVAL_TIMEOUT: 0 # Disable timeout for approval
+          name: codecov-browser-extension-0.6.0.tar.gz
+          path: codecov-browser-extension-0.6.0.tar.gz
+      # - name: Publish to Chrome
+      #   working-directory: dist-chrome
+      #   run: npx chrome-webstore-upload-cli@3
+      #   env:
+      #     EXTENSION_ID: "gedikamndpbemklijjkncpnolildpbgo"
+      #     CLIENT_ID: ${{ secrets.GOOGLE_WEB_STORE_CLIENT_ID }}
+      #     CLIENT_SECRET: ${{ secrets.GOOGLE_WEB_STORE_CLIENT_SECRET }}
+      #     REFRESH_TOKEN: ${{ secrets.GOOGLE_WEB_STORE_REFRESH_TOKEN }}
+      # - name: Publish to Firefox
+      #   working-directory: dist-firefox
+      #   run: npx web-ext sign
+      #   env:
+      #     WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_JWT_ISSUER }}
+      #     WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_JWT_SECRET }}
+      #     WEB_EXT_CHANNEL: listed
+      #     WEB_EXT_UPLOAD_SOURCE_CODE: ../codecov-browser-extension-${{ github.event.release.tag_name }}.tar.gz
+      #     WEB_EXT_APPROVAL_TIMEOUT: 0 # Disable timeout for approval
