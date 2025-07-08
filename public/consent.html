@@ -66,6 +66,13 @@
 
         cursor: pointer;
       }
+
+      button#codecov-uninstall {
+        background: white;
+        border: 1px solid black;
+        color: black;
+        margin-left: 10px;
+      }
     </style>
   </head>
   <body>
@@ -92,12 +99,19 @@
         >.
       </p>
       <p>
+        The Codecov extension may collect and use information from your browser
+        such as your IP address and the URLs of the pages you access on
+        https://github.com or on an enterprise version or self-hosted
+        installation of Github you explicitly grant the extension access to.
+      </p>
+      <p>
         By clicking 'Accept', you confirm that you understand and agree to the
         privacy policy of the Codecov Browser Extension. Should you decide not
         to accept, please note that the extension will not work.
       </p>
       <br />
       <button id="codecov-consent-accept">Accept</button>
+      <button id="codecov-uninstall">Uninstall</button>
     </div>
   </body>
 </html>
