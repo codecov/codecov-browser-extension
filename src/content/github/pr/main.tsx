@@ -23,8 +23,6 @@ const globals: {
 let Sentry: ReturnType<typeof initSentry> = undefined;
 let consent: Consent = "none";
 
-await init();
-
 async function init(): Promise<void> {
   consent = await getConsent();
 
@@ -209,3 +207,5 @@ function clearAnimationAndAnnotations() {
   clearAnimation(lineSelector, annotateLine);
   clearAnnotations((line: HTMLElement) => (line.style.boxShadow = "inherit"));
 }
+
+await init();
