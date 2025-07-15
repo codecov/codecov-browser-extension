@@ -14,7 +14,7 @@ import {
 
 async function handleConsent(): Promise<void> {
   const consent = await new Codecov().getConsent();
-  if (!consent) {
+  if (consent === "none") {
     const url = browser.runtime.getURL("consent.html");
     await browser.tabs.create({ url, active: true });
   }
@@ -41,8 +41,8 @@ async function handleMessages(message: {
   referrer?: string;
 }) {
   const codecov = new Codecov();
-  if (await codecov.getConsent()) {
-    console.log("Have data consent, initializing Sentry");
+  if ((await codecov.getConsent()) === "all") {
+    console.log("Have full data consent, initializing Sentry");
     sentryInit({
       dsn: process.env.SENTRY_DSN,
 

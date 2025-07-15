@@ -41,3 +41,5 @@ export enum MessageType {
   GET_CONSENT = "get_consent",
   SET_CONSENT = "set_consent",
 }
+
+export type Consent = "all" | "essential" | "none";

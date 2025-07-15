@@ -1,6 +1,7 @@
 // The version number here should represent the last version where consent requirement was updated.
 // We must update the key's version to re-request consent whenever the data we collect changes.
-export const consentStorageKey = "codecov-consent-0.5.9";
+export const allConsentStorageKey = "codecov-consent-0.6.3";
+export const onlyEssentialConsentStorageKey = "codecov-essential-consent-0.6.3";
 
 export const codecovApiTokenStorageKey = "self_hosted_codecov_api_token";
 export const selfHostedCodecovURLStorageKey = "self_hosted_codecov_url";

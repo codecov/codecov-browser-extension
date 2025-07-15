@@ -6,6 +6,7 @@ import "tether-drop/dist/css/drop-theme-arrows.css";
 import "src/basscss.css";
 import "./style.css";
 import {
+  Consent,
   CoverageStatus,
   FileCoverageReport,
   FileCoverageReportResponse,
@@ -32,7 +33,7 @@ import {
   getConsent,
 } from "../common/fetchers";
 import { print } from "src/utils";
-import Sentry from "../../common/sentry";
+import { initSentry } from "../../common/sentry";
 
 const globals: {
   coverageReport?: FileCoverageReport;
@@ -44,9 +45,16 @@ const globals: {
   prompt?: HTMLElement;
 } = {};
 
-init();
+let Sentry: ReturnType<typeof initSentry> = undefined;
+let consent: Consent = "none";
 
-function init(): Promise<void> {
+await init();
+
+async function init(): Promise<void> {
+  consent = await getConsent();
+
+  Sentry = initSentry(consent);
+
   // this event discovered by "reverse-engineering GitHub"
   // https://github.com/refined-github/refined-github/blob/main/contributing.md#reverse-engineering-github
   // TODO: this event is not fired when navigating using the browser's back and forward buttons
@@ -60,7 +68,8 @@ function init(): Promise<void> {
 
 async function main(): Promise<void> {
   try {
-    if (!(await getConsent())) {
+    if (consent === "none") {
+      // No data consent, do nothing.
       return;
     }
 
@@ -72,7 +81,9 @@ async function main(): Promise<void> {
     globals.coverageButton = createCoverageButton();
     await process(urlMetadata);
   } catch (e) {
-    Sentry.captureException(e);
+    if (Sentry) {
+      Sentry.captureException(e);
+    }
     throw e;
   }
 }
