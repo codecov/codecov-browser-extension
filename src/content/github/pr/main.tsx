@@ -30,10 +30,10 @@ async function init(): Promise<void> {
 
   Sentry = initSentry(consent);
 
-  return main(consent);
+  return main();
 }
 
-async function main(consent: Consent) {
+async function main() {
   try {
     if (consent === "none") {
       // No data consent, do nothing.

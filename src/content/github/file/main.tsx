@@ -60,13 +60,13 @@ async function init(): Promise<void> {
   // TODO: this event is not fired when navigating using the browser's back and forward buttons
   document.addEventListener("soft-nav:end", () => {
     clear();
-    main(consent);
+    main();
   });
 
-  return main(consent);
+  return main();
 }
 
-async function main(consent: Consent): Promise<void> {
+async function main(): Promise<void> {
   try {
     if (consent === "none") {
       // No data consent, do nothing.
@@ -325,7 +325,7 @@ async function handleFlagClick(selectedFlags: string[]) {
     [flagsStorageKey]: selectedFlags,
   });
   clear();
-  await main(consent);
+  await main();
 }
 
 async function handleComponentClick(selectedComponents: string[]) {
@@ -336,7 +336,7 @@ async function handleComponentClick(selectedComponents: string[]) {
     [componentsStorageKey]: selectedComponents,
   });
   clear();
-  await main(consent);
+  await main();
 }
 
 function calculateCoveragePct(coverageReport: FileCoverageReport): number {
