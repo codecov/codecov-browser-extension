@@ -3,7 +3,7 @@ import _ from "lodash";
 
 import "src/basscss.css";
 import { displayChange } from "src/utils";
-import { CoverageStatus, PullCoverageReport } from "src/types";
+import { Consent, CoverageStatus, PullCoverageReport } from "src/types";
 import {
   animateAndAnnotateLines,
   clearAnimation,
@@ -14,22 +14,38 @@ import { colors } from "../common/constants";
 import { print } from "src/utils";
 import { getConsent, getPRReport } from "../common/fetchers";
 import { isPrUrl } from "../common/utils";
-import Sentry from "src/content/common/sentry";
+import { initSentry } from "src/content/common/sentry";
 
 const globals: {
   coverageReport?: PullCoverageReport;
 } = {};
 
-async function main() {
+let Sentry: ReturnType<typeof initSentry> = undefined;
+let consent: Consent = "none";
+
+await init();
+
+async function init(): Promise<void> {
+  consent = await getConsent();
+
+  Sentry = initSentry(consent);
+
+  return main(consent);
+}
+
+async function main(consent: Consent) {
   try {
-    if (!(await getConsent())) {
+    if (consent === "none") {
+      // No data consent, do nothing.
       return;
     }
 
     document.addEventListener("soft-nav:end", execute);
     await execute();
   } catch (e) {
-    Sentry.captureException(e);
+    if (Sentry) {
+      Sentry.captureException(e);
+    }
     throw e;
   }
 }
@@ -193,5 +209,3 @@ function clearAnimationAndAnnotations() {
   clearAnimation(lineSelector, annotateLine);
   clearAnnotations((line: HTMLElement) => (line.style.boxShadow = "inherit"));
 }
-
-main();

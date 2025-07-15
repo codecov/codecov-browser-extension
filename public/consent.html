@@ -46,7 +46,7 @@
 
       button {
         width: 214px;
-        height: 49px;
+        height: 75px;
         border-radius: 4px;
         border-width: 1px;
         padding-top: 4px;
@@ -67,11 +67,14 @@
         cursor: pointer;
       }
 
+      button + button {
+        margin-left: 10px;
+      }
+
       button#codecov-uninstall {
         background: white;
         border: 1px solid black;
         color: black;
-        margin-left: 10px;
       }
     </style>
   </head>
@@ -102,7 +105,12 @@
         The Codecov extension may collect and use information from your browser
         such as your IP address and the URLs of the pages you access on
         https://github.com or on an enterprise version or self-hosted
-        installation of Github you explicitly grant the extension access to.
+        installation of GitHub to which you explicitly grant the extension
+        access.
+      </p>
+      <p>
+        Additionally, you may choose to opt-in or opt-out of non-personal
+        telemetry collection (error reporting and performance data).
       </p>
       <p>
         By clicking 'Accept', you confirm that you understand and agree to the
@@ -110,7 +118,10 @@
         to accept, please note that the extension will not work.
       </p>
       <br />
-      <button id="codecov-consent-accept">Accept</button>
+      <button id="codecov-consent-accept">Accept and allow telemetry</button>
+      <button id="codecov-consent-accept-essential">
+        Accept and opt-out of telemetry
+      </button>
       <button id="codecov-uninstall">Uninstall</button>
     </div>
   </body>

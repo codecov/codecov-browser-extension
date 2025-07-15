@@ -3,11 +3,30 @@ document.addEventListener("DOMContentLoaded", function () {
   consentButton.addEventListener("click", async function () {
     const result = await browser.runtime.sendMessage({
       type: "set_consent",
-      payload: true,
+      payload: "all",
     });
 
     if (result) {
-      console.log("Consent granted, closing tab");
+      console.log("All consent granted, closing tab");
+      close();
+    } else {
+      console.error(
+        "Something went wrong saving consent. Please report this at https://github.com/codecov/codecov-browser-extension/issues"
+      );
+    }
+  });
+
+  var essentialConsentButton = document.getElementById(
+    "codecov-consent-accept-essential"
+  );
+  essentialConsentButton.addEventListener("click", async function () {
+    const result = await browser.runtime.sendMessage({
+      type: "set_consent",
+      payload: "essential",
+    });
+
+    if (result) {
+      console.log("Essential consent granted, closing tab");
       close();
     } else {
       console.error(

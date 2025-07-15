@@ -1,5 +1,6 @@
 import browser from "webextension-polyfill";
 import {
+  Consent,
   FileCoverageReportResponse,
   FileMetadata,
   MessageType,
@@ -102,7 +103,7 @@ export async function getPRReport(url: any) {
   return response.data;
 }
 
-export async function getConsent() {
+export async function getConsent(): Promise<Consent> {
   const response = await browser.runtime.sendMessage({
     type: MessageType.GET_CONSENT,
   });

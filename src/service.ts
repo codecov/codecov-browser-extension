@@ -9,8 +9,10 @@ import {
   selfHostedGitHubURLStorageKey,
   providers,
   cacheTtlMs,
-  consentStorageKey,
+  allConsentStorageKey,
+  onlyEssentialConsentStorageKey,
 } from "src/constants";
+import { Consent } from "./types";
 
 export class Codecov {
   apiToken: string = "";
@@ -251,23 +253,34 @@ export class Codecov {
     };
   }
 
-  async getConsent(): Promise<boolean> {
+  async getConsent(): Promise<Consent> {
     // We only need to get consent for firefox
     // @ts-ignore IS_FIREFOX is populated by Webpack at build time
     if (!IS_FIREFOX) {
-      return true;
+      return "all";
     }
 
-    const consent: boolean | undefined = await browser.storage.local
-      .get(consentStorageKey)
-      .then((res) => res[consentStorageKey]);
+    const consents = await browser.storage.local.get([
+      allConsentStorageKey,
+      onlyEssentialConsentStorageKey,
+    ]);
 
-    return !!consent;
+    if (consents[allConsentStorageKey]) {
+      return "all";
+    } else if (consents[onlyEssentialConsentStorageKey]) {
+      return "essential";
+    } else {
+      return "none";
+    }
   }
 
-  async setConsent(consent: boolean): Promise<boolean> {
+  async setConsent(consent: Consent): Promise<Consent> {
+    const allConsent = consent === "all";
+    const essentialConsent = consent === "essential";
+
     const storageObject: { [id: string]: boolean } = {};
-    storageObject[consentStorageKey] = consent;
+    storageObject[allConsentStorageKey] = allConsent;
+    storageObject[onlyEssentialConsentStorageKey] = essentialConsent;
 
     await browser.storage.local.set(storageObject);
 
