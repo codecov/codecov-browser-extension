@@ -13,8 +13,11 @@ import {
 } from "./dynamic_content_scripts";
 
 async function handleConsent(): Promise<void> {
-  const consent = await new Codecov().getConsent();
-  if (consent === "none") {
+  const codecov = new Codecov();
+  const consent = await codecov.getConsent();
+  const canOpenConsentTab = await codecov.canOpenConsentTab();
+
+  if (consent === "none" && canOpenConsentTab) {
     const url = browser.runtime.getURL("consent.html");
     await browser.tabs.create({ url, active: true });
   }
