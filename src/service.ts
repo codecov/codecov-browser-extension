@@ -289,8 +289,8 @@ export class Codecov {
   }
 
   async canOpenConsentTab(): Promise<Boolean> {
-    // Returns whether the consent tab was opened this session. Resolves the
-    // case where two consent tabs are opened simultaneously.
+    // Returns false if the consent tab has been opened in the last two seconds.
+    // Resolves the case where two consent tabs are opened simultaneously.
     const locked = await browser.storage.local
       .get([consentTabLock])
       .then((res) => res[consentTabLock]);
