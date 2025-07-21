@@ -11,6 +11,7 @@ import {
   cacheTtlMs,
   allConsentStorageKey,
   onlyEssentialConsentStorageKey,
+  consentTabLock,
 } from "src/constants";
 import { Consent } from "./types";
 
@@ -285,5 +286,34 @@ export class Codecov {
     await browser.storage.local.set(storageObject);
 
     return consent;
+  }
+
+  async canOpenConsentTab(): Promise<Boolean> {
+    // Returns whether the consent tab was opened this session. Resolves the
+    // case where two consent tabs are opened simultaneously.
+    const locked = await browser.storage.local
+      .get([consentTabLock])
+      .then((res) => res[consentTabLock]);
+
+    if (locked) {
+      return false;
+    }
+
+    // Acquire the lock and return true
+
+    const storageObject: { [id: string]: boolean } = {};
+    storageObject[consentTabLock] = true;
+
+    await browser.storage.local.set(storageObject);
+
+    // After 2 seconds, release the lock
+    setTimeout(() => {
+      const storageObject: { [id: string]: boolean } = {};
+      storageObject[consentTabLock] = false;
+
+      browser.storage.local.set(storageObject);
+    }, 2000);
+
+    return true;
   }
 }
