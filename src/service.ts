@@ -45,6 +45,17 @@ export class Codecov {
     }
   }
 
+  private async safeResponseJson(response: Response): Promise<any> {
+    if (!response.ok) {
+      return null;
+    }
+    try {
+      return await response.json();
+    } catch {
+      return null;
+    }
+  }
+
   async fetch(input: RequestInfo, init?: RequestInit): Promise<Response> {
     // fetch wrapper that adds API token auth if necessary
 
@@ -110,10 +121,10 @@ export class Codecov {
         Referrer: referrer,
       },
     });
-    const data = await response.json();
+    const data = await this.safeResponseJson(response);
 
     return {
-      ok: response.ok,
+      ok: response.ok && data !== null,
       data,
     };
   }
@@ -134,10 +145,10 @@ export class Codecov {
         Referrer: referrer,
       },
     });
-    const data = await response.json();
+    const data = await this.safeResponseJson(response);
 
     return {
-      ok: response.ok,
+      ok: response.ok && data !== null,
       data,
     };
   }
@@ -211,12 +222,14 @@ export class Codecov {
         Referrer: referrer,
       },
     });
-    const data = await response.json();
+    const data = await this.safeResponseJson(response);
 
-    await this.setCached("flags", owner, repo, data);
+    if (data !== null) {
+      await this.setCached("flags", owner, repo, data);
+    }
 
     return {
-      ok: response.ok,
+      ok: response.ok && data !== null,
       data,
     };
   }
@@ -244,12 +257,14 @@ export class Codecov {
         Referrer: referrer,
       },
     });
-    const data = await response.json();
+    const data = await this.safeResponseJson(response);
 
-    await this.setCached("components", owner, repo, data);
+    if (data !== null) {
+      await this.setCached("components", owner, repo, data);
+    }
 
     return {
-      ok: response.ok,
+      ok: response.ok && data !== null,
       data,
     };
   }
