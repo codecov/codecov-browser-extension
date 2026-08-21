@@ -19,6 +19,10 @@ import {
   noVirtLineSelector,
 } from "./utils/constants";
 import {
+  waitForElement,
+  ElementNotFoundError,
+} from "./utils/waitForElement";
+import {
   animateAndAnnotateLines,
   clearAnimation,
   clearAnnotations,
@@ -78,9 +82,15 @@ async function main(): Promise<void> {
       print("file not detected at current URL");
       return;
     }
-    globals.coverageButton = createCoverageButton();
+    globals.coverageButton = await createCoverageButton();
     await process(urlMetadata);
   } catch (e) {
+    if (e instanceof ElementNotFoundError) {
+      // Raw button not present on this page (e.g. binary files or GitHub DOM
+      // not yet rendered). This is expected on some file types — skip silently.
+      print("Raw button not found, skipping coverage overlay");
+      return;
+    }
     if (Sentry) {
       Sentry.captureException(e);
     }
@@ -162,16 +172,24 @@ async function process(metadata: FileMetadata): Promise<void> {
       previousElement: globals.coverageButton!,
       selectedOptions: selectedFlags,
       onClick: handleFlagClick,
-    }).then(({ button, list }) => {
-      globals.flagsButton = button;
-      globals.flagsDrop = new Drop({
-        target: button,
-        content: list,
-        classes: "drop-theme-arrows codecov-z1 codecov-bg-white",
-        position: "bottom right",
-        openOn: "click",
+    })
+      .then(({ button, list }) => {
+        globals.flagsButton = button;
+        globals.flagsDrop = new Drop({
+          target: button,
+          content: list,
+          classes: "drop-theme-arrows codecov-z1 codecov-bg-white",
+          position: "bottom right",
+          openOn: "click",
+        });
+      })
+      .catch((e) => {
+        if (e instanceof ElementNotFoundError) {
+          print("Raw button not found, skipping flags dropdown");
+          return;
+        }
+        throw e;
       });
-    });
   }
 
   const components = await getComponents(metadata);
@@ -201,16 +219,24 @@ async function process(metadata: FileMetadata): Promise<void> {
       previousElement: globals.coverageButton!,
       onClick: handleComponentClick,
       selectedOptions: selectedComponents,
-    }).then(({ button, list }) => {
-      globals.componentsButton = button;
-      globals.componentsDrop = new Drop({
-        target: button,
-        content: list,
-        classes: "drop-theme-arrows codecov-z1 codecov-bg-white",
-        position: "bottom right",
-        openOn: "click",
+    })
+      .then(({ button, list }) => {
+        globals.componentsButton = button;
+        globals.componentsDrop = new Drop({
+          target: button,
+          content: list,
+          classes: "drop-theme-arrows codecov-z1 codecov-bg-white",
+          position: "bottom right",
+          openOn: "click",
+        });
+      })
+      .catch((e) => {
+        if (e instanceof ElementNotFoundError) {
+          print("Raw button not found, skipping components dropdown");
+          return;
+        }
+        throw e;
       });
-    });
   }
 
   // If commit sha is defined use that, otherwise just branch name
@@ -291,11 +317,8 @@ async function process(metadata: FileMetadata): Promise<void> {
   animateAndAnnotateLines(noVirtLineSelector, annotateLine);
 }
 
-function createCoverageButton() {
-  const rawButton = document.querySelector('[data-testid="raw-button"]');
-  if (!rawButton) {
-    throw new Error("Raw button not found");
-  }
+async function createCoverageButton() {
+  const rawButton = await waitForElement('[data-testid="raw-button"]');
   const codecovButton = rawButton.cloneNode(true) as HTMLElement;
   codecovButton.addEventListener("click", (event) => {
     event.preventDefault();
