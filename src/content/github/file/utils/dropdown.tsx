@@ -1,6 +1,7 @@
 import browser from "webextension-polyfill";
 import _ from "lodash";
 import React from "dom-chef";
+import { waitForElement } from "./waitForElement";
 
 export async function createDropdown({
   title,
@@ -17,10 +18,7 @@ export async function createDropdown({
   previousElement: HTMLElement;
   selectedOptions: string[];
 }) {
-  const rawButton = document.querySelector('[data-testid="raw-button"]');
-  if (!rawButton) {
-    throw new Error("Raw button not found");
-  }
+  const rawButton = await waitForElement('[data-testid="raw-button"]');
   const dropdownButton = rawButton.cloneNode(true) as HTMLElement;
   const textNode = dropdownButton.querySelector('[data-component="text"]');
   if (!textNode || !textNode.parentElement)
