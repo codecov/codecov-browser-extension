@@ -79,6 +79,7 @@ async function main(): Promise<void> {
       return;
     }
     globals.coverageButton = createCoverageButton();
+    if (!globals.coverageButton) return;
     await process(urlMetadata);
   } catch (e) {
     if (Sentry) {
@@ -291,10 +292,10 @@ async function process(metadata: FileMetadata): Promise<void> {
   animateAndAnnotateLines(noVirtLineSelector, annotateLine);
 }
 
-function createCoverageButton() {
+function createCoverageButton(): HTMLElement | undefined {
   const rawButton = document.querySelector('[data-testid="raw-button"]');
   if (!rawButton) {
-    throw new Error("Raw button not found");
+    return undefined;
   }
   const codecovButton = rawButton.cloneNode(true) as HTMLElement;
   codecovButton.addEventListener("click", (event) => {
