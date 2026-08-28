@@ -110,6 +110,11 @@ export class Codecov {
         Referrer: referrer,
       },
     });
+
+    if (!response.ok) {
+      return { ok: false, data: null };
+    }
+
     const data = await response.json();
 
     return {
@@ -134,6 +139,11 @@ export class Codecov {
         Referrer: referrer,
       },
     });
+
+    if (!response.ok) {
+      return { ok: false, data: null };
+    }
+
     const data = await response.json();
 
     return {
@@ -211,6 +221,11 @@ export class Codecov {
         Referrer: referrer,
       },
     });
+
+    if (!response.ok) {
+      return { ok: false, data: null };
+    }
+
     const data = await response.json();
 
     await this.setCached("flags", owner, repo, data);
@@ -244,6 +259,11 @@ export class Codecov {
         Referrer: referrer,
       },
     });
+
+    if (!response.ok) {
+      return { ok: false, data: null };
+    }
+
     const data = await response.json();
 
     await this.setCached("components", owner, repo, data);
