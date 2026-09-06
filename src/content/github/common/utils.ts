@@ -2,8 +2,8 @@
 // so these checks don't need to include that.
 
 // This one matches PR files pages. Something like:
-// /codecov/gazebo/pull/2435/files
-const prUrlRegex = /\/[^\/]+\/[^\/]+\/pull\/\d+\/files.*/
+// /codecov/gazebo/pull/2435/files or /codecov/gazebo/pull/2435/changes
+const prUrlRegex = /\/[^\/]+\/[^\/]+\/pull\/\d+\/(?:fil|chang)es.*/
 
 // And this one matches file view pages - which look like:
 // /codecov/gazebo/blob/main/src/App.jsx

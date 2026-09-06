@@ -120,7 +120,7 @@ function createContainer() {
 }
 
 function getMetadataFromURL(): { [key: string]: string } | null {
-  const regexp = /\/(?<owner>.+?)\/(?<repo>.+?)\/pull\/(?<id>\d+?)\/files/;
+  const regexp = /\/(?<owner>.+?)\/(?<repo>.+?)\/pull\/(?<id>\d+?)\/(?:fil|chang)es/;
   const matches = regexp.exec(window.location.pathname);
   const groups = matches?.groups;
   if (!groups) {
