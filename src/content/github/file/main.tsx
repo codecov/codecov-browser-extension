@@ -66,8 +66,17 @@ async function init(): Promise<void> {
   return main();
 }
 
+function isExtensionContextValid(): boolean {
+  return browser.runtime?.id != null;
+}
+
 async function main(): Promise<void> {
   try {
+    if (!isExtensionContextValid()) {
+      print("extension context invalidated, skipping");
+      return;
+    }
+
     if (consent === "none") {
       // No data consent, do nothing.
       return;
