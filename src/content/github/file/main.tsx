@@ -78,6 +78,10 @@ async function main(): Promise<void> {
       print("file not detected at current URL");
       return;
     }
+    if (!document.querySelector('[data-testid="raw-button"]')) {
+      print("Raw button not found – skipping coverage overlay (non-text file?)");
+      return;
+    }
     globals.coverageButton = createCoverageButton();
     await process(urlMetadata);
   } catch (e) {
@@ -162,7 +166,9 @@ async function process(metadata: FileMetadata): Promise<void> {
       previousElement: globals.coverageButton!,
       selectedOptions: selectedFlags,
       onClick: handleFlagClick,
-    }).then(({ button, list }) => {
+    }).then((result) => {
+      if (!result) return;
+      const { button, list } = result;
       globals.flagsButton = button;
       globals.flagsDrop = new Drop({
         target: button,
@@ -201,7 +207,9 @@ async function process(metadata: FileMetadata): Promise<void> {
       previousElement: globals.coverageButton!,
       onClick: handleComponentClick,
       selectedOptions: selectedComponents,
-    }).then(({ button, list }) => {
+    }).then((result) => {
+      if (!result) return;
+      const { button, list } = result;
       globals.componentsButton = button;
       globals.componentsDrop = new Drop({
         target: button,
