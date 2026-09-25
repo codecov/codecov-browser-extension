@@ -19,7 +19,7 @@ export async function createDropdown({
 }) {
   const rawButton = document.querySelector('[data-testid="raw-button"]');
   if (!rawButton) {
-    throw new Error("Raw button not found");
+    return null;
   }
   const dropdownButton = rawButton.cloneNode(true) as HTMLElement;
   const textNode = dropdownButton.querySelector('[data-component="text"]');
