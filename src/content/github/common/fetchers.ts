@@ -18,7 +18,8 @@ export async function getFlags(metadata: FileMetadata): Promise<string[]> {
     referrer: window.location.href,
   });
 
-  const flags = response.ok ? response.data.results : [];
+  const results = response.ok ? response.data.results : [];
+  const flags = Array.isArray(results) ? results : [];
 
   return flags.map((f: any) => f.flag_name);
 }
@@ -35,7 +36,8 @@ export async function getComponents(metadata: FileMetadata): Promise<string[]> {
     referrer: window.location.href,
   });
 
-  const components = response.ok ? response.data : [];
+  const data = response.ok ? response.data : [];
+  const components = Array.isArray(data) ? data : [];
 
   return components.map((c: any) => c.component_id);
 }
