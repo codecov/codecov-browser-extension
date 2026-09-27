@@ -213,7 +213,9 @@ export class Codecov {
     });
     const data = await response.json();
 
-    await this.setCached("flags", owner, repo, data);
+    if (response.ok) {
+      await this.setCached("flags", owner, repo, data);
+    }
 
     return {
       ok: response.ok,
@@ -246,7 +248,9 @@ export class Codecov {
     });
     const data = await response.json();
 
-    await this.setCached("components", owner, repo, data);
+    if (response.ok) {
+      await this.setCached("components", owner, repo, data);
+    }
 
     return {
       ok: response.ok,
